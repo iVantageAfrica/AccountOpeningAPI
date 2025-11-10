@@ -52,4 +52,28 @@ class UtilityService
         $otpRecord->update(['status' => false]);
         return true;
     }
+
+    /**
+     * @throws CustomException
+     * @throws RandomException
+     */
+    public static function requestOTP(string $emailAddress, OtpPurpose $purpose): string
+    {
+        $existingOtp = OTP::whereEmailAddress($emailAddress)
+            ->wherePurpose($purpose->value)
+            ->where('expires_at', '>', now())
+            ->orderByDesc('created_at')
+            ->first();
+
+        if ($existingOtp) {
+            $minutesSinceSent = $existingOtp->created_at->diffInMinutes(now());
+            $waitMinutes = round(3 - $minutesSinceSent);
+            if ($waitMinutes > 0) {
+                throw new CustomException("Kindly wait for another {$waitMinutes} minute(s) before requesting a new OTP.");
+            }
+        }
+        $otpCode = generateRandomNumber(6);
+        OTPJobs::dispatch($otpCode, $emailAddress, $purpose->value);
+        return EncryptionHelper::secureString(['reference' => $emailAddress, 'code' => $otpCode]);
+    }
 }

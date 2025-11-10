@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Enum\ModelClassEnum;
+use App\Enum\OtpPurpose;
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Utility\AccountTypeResource;
@@ -47,4 +48,17 @@ class UtilityController extends Controller
         UtilityService::verifyOtpCode($otpCode, $reference, $code);
         return $this->successResponse(message: 'OTP verified successfully');
     }
+
+    /**
+     * @throws CustomException
+     * @throws RandomException
+     */
+    public function requestOtp(Request $request): JsonResponse
+    {
+        ['emailAddress' => $emailAddress, 'purpose' => $purpose] = QueryParamValidator::getRequiredParams($request, ['emailAddress', 'purpose']);
+        $purpose = 'BVN' ? OtpPurpose::BVN_VALIDATION : OtpPurpose::RESET_PASSWORD;
+        $verificationToken = UtilityService::requestOTP($emailAddress, $purpose);
+        return $this->successDataResponse(data: $verificationToken);
+    }
+
 }

@@ -6,5 +6,6 @@ Route::controller(UtilityController::class)->group(function () {
     Route::get('ping', 'ping');
     Route::get('list-account-type', 'listAccountTypes');
     Route::get('verify-bvn', 'verifyBvn');
+    Route::get('request-otp', 'requestOtp');
     Route::get('verify-otp', 'verifyOtp')->middleware('access.token');
 });
