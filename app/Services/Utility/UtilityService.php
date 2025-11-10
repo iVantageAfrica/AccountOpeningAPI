@@ -7,6 +7,7 @@ use App\Exceptions\CustomException;
 use App\Helpers\EncryptionHelper;
 use App\Jobs\OTPJobs;
 use App\Models\Utility\Otp;
+use App\Services\ThirdParty\BluSalt;
 use App\Services\ThirdParty\ImperialMortgage;
 use Carbon\Carbon;
 use Nette\Schema\ValidationException;
@@ -20,16 +21,29 @@ class UtilityService
      */
     public static function verifyBvn(string $bvn): array
     {
-        $userBvn = ImperialMortgage::verifyBvn($bvn);
+        $result = [];
         $emailAddress = '';
-        if ($userBvn['statusCode'] === 200) {
-            $emailAddress = $userBvn['data']['UserEmail'];
+
+        //Check Imperial Mortgage BVN verification
+        $imperialVerification = ImperialMortgage::verifyBvn($bvn);
+        if ($imperialVerification['statusCode'] === 200) {
+            $emailAddress = $imperialVerification['data']['UserEmail'];
+            $result = $imperialVerification;
+        }
+        //Check Blu salt BVN verification
+        else {
+            $result = BluSalt::verifyBvn($bvn);
+            if ($result['statusCode'] === 200) {
+                $emailAddress = $result['data']['UserEmail'];
+            } else {
+                throw new CustomException('Invalid BVN provided. Please try again.');
+            }
         }
 
         //Generate OTP for BVN verification
         $code = generateRandomNumber(6);
         dispatch(new OTPJobs($code, $emailAddress, OtpPurpose::BVN_VALIDATION->value));
-        return array_merge($userBvn, ['verificationToken' => EncryptionHelper::secureString(['reference' => $emailAddress, 'code' => $code])]);
+        return array_merge($result, ['verificationToken' => EncryptionHelper::secureString(['reference' => $emailAddress, 'code' => $code])]);
     }
 
 
