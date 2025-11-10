@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'imperialMortgageBvn' => [
+        'baseUrl' => env('IMPERIAL_BVN_VALIDATION_URL'),
+        'authToken' => env('IMPERIAL_AUTH_TOKEN'),
+    ],
+
 ];

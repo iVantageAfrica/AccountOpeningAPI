@@ -7,6 +7,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 trait JsonResponseTrait
 {
+    public function defaultResponse(array $responseData, int $statusCode = Response::HTTP_OK): JsonResponse
+    {
+        return response()->json($responseData, $statusCode);
+    }
+
     public function successResponse($statusCode = Response::HTTP_OK, $message = 'Successful'): JsonResponse
     {
         $response = [
