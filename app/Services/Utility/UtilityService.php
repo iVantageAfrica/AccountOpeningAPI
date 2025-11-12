@@ -21,40 +21,28 @@ class UtilityService
      */
     public static function verifyBvn(string $bvn): array
     {
-        $result = [];
-        $emailAddress = '';
-
-        //Check Imperial Mortgage BVN verification
-        $imperialVerification = ImperialMortgage::verifyBvn($bvn);
-        if ($imperialVerification['statusCode'] === 200) {
-            $emailAddress = $imperialVerification['data']['UserEmail'];
-            $result = $imperialVerification;
-        }
-        //Check Blu salt BVN verification
-        else {
-            $result = BluSalt::verifyBvn($bvn);
-            if ($result['statusCode'] === 200) {
-                $emailAddress = $result['data']['UserEmail'];
-            } else {
-                throw new CustomException('Invalid BVN provided. Please try again.');
-            }
-        }
+        $result = self::bvnVerification($bvn);
 
         //Generate OTP for BVN verification
         $code = generateRandomNumber(6);
-        dispatch(new OTPJobs($code, $emailAddress, OtpPurpose::BVN_VALIDATION->value));
-        return array_merge($result, ['verificationToken' => EncryptionHelper::secureString(['reference' => $emailAddress, 'code' => $code])]);
+        dispatch(new OTPJobs($code, $result['UserEmail'], OtpPurpose::BVN_VALIDATION->value, $bvn));
+        return ['emailAddress' => $result['UserEmail'],
+                'phoneNumber' => $result['UserPhoneNo'],
+                'authToken' => EncryptionHelper::secureString(['reference' => $result['UserEmail'], 'code' => $code])];
     }
 
 
-
-    public static function verifyOtpCode(string $otpCode, string $reference, string $code): bool
+    /**
+     * @throws CustomException
+     * @throws RandomException
+     */
+    public static function verifyOtpCode(string $otpCode, string $reference, string $code): array
     {
         if ($code !== $otpCode) {
             throw new ValidationException('Unauthorized OTP code.');
         }
         $otpRecord = Otp::whereCode($otpCode)->first();
-        if (!$otpRecord || $otpRecord->email_address !== $reference) {
+        if (!$otpRecord || strcasecmp($otpRecord->email_address, $reference) !== 0) {
             throw new ValidationException(message: 'Invalid OTP code.');
         }
         if (!$otpRecord->status) {
@@ -63,8 +51,12 @@ class UtilityService
         if (Carbon::parse($otpRecord->expires_at)->isPast()) {
             throw new ValidationException(message: 'OTP code expired. Kindly request for a new one.');
         }
+
+        $data = ($otpRecord->purpose === OtpPurpose::BVN_VALIDATION->value)
+            ? self::bvnVerification(EncryptionHelper::secureString($otpRecord->reference, 'decrypt'))
+            : [];
         $otpRecord->update(['status' => false]);
-        return true;
+        return ['bvnData' => $data];
     }
 
     /**
@@ -73,6 +65,7 @@ class UtilityService
      */
     public static function requestOTP(string $emailAddress, OtpPurpose $purpose): string
     {
+        $reference = null;
         $existingOtp = OTP::whereEmailAddress($emailAddress)
             ->wherePurpose($purpose->value)
             ->where('expires_at', '>', now())
@@ -85,9 +78,35 @@ class UtilityService
             if ($waitMinutes > 0) {
                 throw new CustomException("Kindly wait for another {$waitMinutes} minute(s) before requesting a new OTP.");
             }
+            $reference = EncryptionHelper::secureString($existingOtp->reference, 'decrypt');
+        }
+        if ($purpose->value === OtpPurpose::BVN_VALIDATION->value) {
+            $reference = EncryptionHelper::secureString(OTP::whereEmailAddress($emailAddress)
+                ->wherePurpose(OtpPurpose::BVN_VALIDATION->value)
+                ->latest()
+                ->value('reference'), 'decrypt');
         }
         $otpCode = generateRandomNumber(6);
-        OTPJobs::dispatch($otpCode, $emailAddress, $purpose->value);
+        OTPJobs::dispatch($otpCode, $emailAddress, $purpose->value, $reference);
         return EncryptionHelper::secureString(['reference' => $emailAddress, 'code' => $otpCode]);
+    }
+
+
+    /**
+     * @throws CustomException
+     */
+    private static function bvnVerification(string $bvn): array
+    {
+        //Check Imperial Mortgage BVN verification
+        $imperialVerification = ImperialMortgage::verifyBvn($bvn);
+        if ($imperialVerification['statusCode'] === 200) {
+            return $imperialVerification['data'];
+        }
+        //Check Blu salt BVN verification
+        $result = BluSalt::verifyBvn($bvn);
+        if ($result['statusCode'] === 200) {
+            return $result['data'];
+        }
+        throw new CustomException('Invalid BVN provided. Please try again.', 404);
     }
 }

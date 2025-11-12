@@ -3,19 +3,25 @@
 namespace App\Services\Utility;
 
 use App\Enum\OtpPurpose;
+use App\Helpers\EncryptionHelper;
 use App\Models\Utility\Otp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Random\RandomException;
 
 class MessageService
 {
-    public static function createOTPCode(string $code, string $emailAddress, string $purpose): void
+    /**
+     * @throws RandomException
+     */
+    public static function createOTPCode(string $code, string $emailAddress, string $purpose, string $reference = null): void
     {
         Otp::create(
             [
-                'email_address' => $emailAddress,
+                'email_address' => strtolower($emailAddress),
                 'purpose' => $purpose,
                 'code' => $code,
+                'reference' => EncryptionHelper::secureString($reference),
                 'expires_at' => Carbon::now()->addMinutes(5),
             ]
         );

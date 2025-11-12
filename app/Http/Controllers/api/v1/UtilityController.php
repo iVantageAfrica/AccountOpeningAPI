@@ -37,16 +37,19 @@ class UtilityController extends Controller
     public function verifyBvn(Request $request): JsonResponse
     {
         ['bvn' => $bvn] = QueryParamValidator::getRequiredParams($request, ['bvn']);
-        return $this->defaultResponse(UtilityService::verifyBvn($bvn), 200);
+        return $this->successDataResponse(data:UtilityService::verifyBvn($bvn));
     }
 
+    /**
+     * @throws CustomException
+     * @throws RandomException
+     */
     public function verifyOtp(Request $request): JsonResponse
     {
         ['otpCode' => $otpCode] = QueryParamValidator::getRequiredParams($request, ['otpCode']);
         $reference = $request->user()->reference;
         $code = $request->user()->code;
-        UtilityService::verifyOtpCode($otpCode, $reference, $code);
-        return $this->successResponse(message: 'OTP verified successfully');
+        return $this->successDataResponse(data:UtilityService::verifyOtpCode($otpCode, $reference, $code), message: 'OTP verified successfully');
     }
 
     /**
@@ -56,8 +59,8 @@ class UtilityController extends Controller
     public function requestOtp(Request $request): JsonResponse
     {
         ['emailAddress' => $emailAddress, 'purpose' => $purpose] = QueryParamValidator::getRequiredParams($request, ['emailAddress', 'purpose']);
-        $purpose = 'BVN' ? OtpPurpose::BVN_VALIDATION : OtpPurpose::RESET_PASSWORD;
-        $verificationToken = UtilityService::requestOTP($emailAddress, $purpose);
+        $purpose = $purpose === 'BVN' ? OtpPurpose::BVN_VALIDATION : OtpPurpose::RESET_PASSWORD;
+        $verificationToken = UtilityService::requestOTP(strtolower($emailAddress), $purpose);
         return $this->successDataResponse(data: $verificationToken);
     }
 

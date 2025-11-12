@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Random\RandomException;
 
 class OTPJobs implements ShouldQueue
 {
@@ -19,19 +20,22 @@ class OTPJobs implements ShouldQueue
     protected string $email;
     protected string $purpose;
     protected string $code;
+    protected ?string $reference;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $code, string $email, string $purpose)
+    public function __construct(string $code, string $email, string $purpose, ?string $reference = null)
     {
         $this->code = $code;
         $this->email = $email;
         $this->purpose = $purpose;
+        $this->reference = $reference;
     }
 
     /**
      * Execute the job.
+     * @throws RandomException
      */
     public function handle(): void
     {
@@ -45,6 +49,6 @@ class OTPJobs implements ShouldQueue
             return;
         }
 
-        MessageService::createOTPCode($this->code, $this->email, $this->purpose);
+        MessageService::createOTPCode($this->code, $this->email, $this->purpose, $this->reference);
     }
 }

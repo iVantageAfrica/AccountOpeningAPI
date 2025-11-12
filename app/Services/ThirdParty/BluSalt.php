@@ -10,7 +10,7 @@ class BluSalt
         $resultMap = [
             'SeqRef' => 'feecd4b4-28ce-4dc1-a95b-d4582beca09d',
             'UserPhoneNo' => '08117614246',
-            'UserEmail' => 'hazeezfaizat@GMAIL.COM',
+            'UserEmail' => 'IFANIYIOLUWAPELUMI@GMAIL.COM',
             'BVN' => '22162221174',
             'RefererCode' => '',
             'marital_status' => 'Single',
