@@ -39,8 +39,9 @@ class OTPJobs implements ShouldQueue
      */
     public function handle(): void
     {
-        $existingOtp = Otp::whereEmailAddress($this->email)
+        $existingOtp = Otp::whereEmailAddress(strtolower($this->email))
             ->wherePurpose($this->purpose)
+            ->whereStatus(false)
             ->where('expires_at', '>', now())
             ->orderByDesc('created_at')
             ->first();

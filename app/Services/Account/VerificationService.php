@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Services\Utility;
+namespace App\Services\Account;
 
 use App\Enum\OtpPurpose;
 use App\Exceptions\CustomException;
 use App\Helpers\EncryptionHelper;
 use App\Jobs\OTPJobs;
+use App\Models\User;
 use App\Models\Utility\Otp;
 use App\Services\ThirdParty\BluSalt;
 use App\Services\ThirdParty\ImperialMortgage;
@@ -13,7 +14,7 @@ use Carbon\Carbon;
 use Nette\Schema\ValidationException;
 use Random\RandomException;
 
-class UtilityService
+class VerificationService
 {
     /**
      * @throws CustomException
@@ -53,7 +54,7 @@ class UtilityService
         }
 
         $data = ($otpRecord->purpose === OtpPurpose::BVN_VALIDATION->value)
-            ? self::bvnVerification(EncryptionHelper::secureString($otpRecord->reference, 'decrypt'))
+            ? User::whereBvn(EncryptionHelper::secureString($otpRecord->reference, 'decrypt'))->first()?->accountData()
             : [];
         $otpRecord->update(['status' => false]);
         return ['bvnData' => $data];
@@ -97,16 +98,19 @@ class UtilityService
      */
     private static function bvnVerification(string $bvn): array
     {
-        //Check Imperial Mortgage BVN verification
-        $imperialVerification = ImperialMortgage::verifyBvn($bvn);
-        if ($imperialVerification['statusCode'] === 200) {
-            return $imperialVerification['data'];
-        }
-        //Check Blu salt BVN verification
-        $result = BluSalt::verifyBvn($bvn);
-        if ($result['statusCode'] === 200) {
-            return $result['data'];
+        $providers = [
+            fn () => ImperialMortgage::verifyBvn($bvn),
+            fn () => BluSalt::verifyBvn($bvn),
+        ];
+
+        foreach ($providers as $provider) {
+            $response = $provider();
+            if (($response['statusCode'] ?? null) === 200) {
+                AccountService::accountCreation($response['data'], $bvn);
+                return $response['data'];
+            }
         }
         throw new CustomException('Invalid BVN provided. Please try again.', 404);
     }
+
 }

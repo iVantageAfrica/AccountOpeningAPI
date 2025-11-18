@@ -31,6 +31,7 @@ class RouteServiceProvider extends ServiceProvider
             ->group(
                 function () {
                     $this->utilityRoutes();
+                    $this->accountRoutes();
                 }
             );
     }
@@ -41,6 +42,15 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(function () {
                 include base_path('routes/v1/utility.php');
+            });
+    }
+
+    public function accountRoutes(): void
+    {
+        Route::prefix('api/v1/account/')
+            ->namespace($this->namespace)
+            ->group(function () {
+                include base_path('routes/v1/account.php');
             });
     }
 

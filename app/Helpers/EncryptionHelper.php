@@ -41,8 +41,8 @@ class EncryptionHelper
             $cipherText = substr($decoded, $ivLength);
             $decryptedData = openssl_decrypt($cipherText, $cipher, $key, 0, $iv);
 
-            $isDataArray = json_decode($decryptedData, true, 512, JSON_THROW_ON_ERROR);
-            return (json_last_error() === JSON_ERROR_NONE) ? $isDataArray : $decryptedData;
+            $decoded = json_decode($decryptedData, true);
+            return json_last_error() === JSON_ERROR_NONE ? $decoded : $decryptedData;
         }
         throw new CustomException('Invalid action. Use "encrypt" or "decrypt".');
     }

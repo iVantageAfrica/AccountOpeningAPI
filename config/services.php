@@ -40,4 +40,9 @@ return [
         'authToken' => env('IMPERIAL_AUTH_TOKEN'),
     ],
 
+    'accountOpening' => [
+        'baseUrl' => env('IMPERIAL_ACCOUNT_OPENING_URL'),
+        'apiKey' => env('IMPERIAL_ACCOUNT_OPENING_API_KEY'),
+    ],
+
 ];

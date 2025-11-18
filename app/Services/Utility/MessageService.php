@@ -4,6 +4,7 @@ namespace App\Services\Utility;
 
 use App\Enum\OtpPurpose;
 use App\Helpers\EncryptionHelper;
+use App\Models\User;
 use App\Models\Utility\Otp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -32,6 +33,13 @@ class MessageService
         if ($purpose === OtpPurpose::RESET_PASSWORD->value) {
             self::mailMessage($emailAddress, $purpose, 'emails.resetPassword', ['otpCode' => $code]);
         }
+    }
+
+    public static function accountCreationMessage(array $data): void
+    {
+        $userData = User::whereBvn($data['bvn'])->firstOrFail();
+        $data['firstname'] = $userData->firstname;
+        self::mailMessage($userData->email, 'Account Creation', 'emails.accountCreation', $data);
     }
 
     public static function mailMessage(string $emailAddress, string $subject, string $viewName, array $data = []): void
