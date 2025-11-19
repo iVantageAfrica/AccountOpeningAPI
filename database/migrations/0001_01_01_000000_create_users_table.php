@@ -22,10 +22,6 @@ return new class () extends Migration {
             $table->string('address')->nullable();
             $table->string('gender')->nullable();
             $table->string('date_of_birth')->nullable();
-            $table->integer('savings_account_id')->nullable();
-            $table->integer('current_account_id')->nullable();
-            $table->integer('corporate_account_id')->nullable();
-            $table->integer('pos_merchant_account_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

@@ -56,7 +56,6 @@ class ImperialMortgage
     {
         return '0137712594';
         $baseurl = config('services.accountOpening.baseUrl');
-        $apiKey = config('services.accountOpening.apiKey');
         $residential_address = $data['house_number'].', '.$data['street'].', '.$data['city'].', '.$data['state'];
         $params = [
             'FirstName' => $data['firstname'],
@@ -70,6 +69,47 @@ class ImperialMortgage
             'Email' => $data['email'],
         ];
 
+        return self::accountOpening($baseurl.'/CreateAccount', $params);
+    }
+
+    public static function createMerchantAccount(array $data): string
+    {
+        return '9199999999';
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function createCorporateAccount(array $data): string
+    {
+        $baseurl = config('services.accountOpening.baseUrl');
+        $params = [
+            'CoyName' => $data['company_name'],
+            'tin' =>  $data['tin'],
+            'OfficeAddress' => $data['address'],
+            'AccountType' => $data['account_type'],
+            'OfficePhoneNumber' => $data['phone_number'],
+            'OfficeEmail' => $data['business_email'],
+            'Director1SurName' => $data['director'][0]['lastname'],
+            'Director1FirstName' => $data['director'][0]['firstname'],
+            'Director1Bvn' => $data['director'][0]['bvn'],
+            'Director2SurName' => $data['director'][1]['lastname'] ?? '',
+            'Director2FirstName' => $data['director'][1]['firstname'] ?? '',
+            'Director2Bvn' => $data['director'][1]['bvn'] ?? '',
+        ];
+        return '0484849494';
+        return self::accountOpening($baseurl.'/CreateCorporateAccount', $params);
+    }
+
+    /**
+     * @param mixed $baseurl
+     * @param array $params
+     * @return mixed|string
+     * @throws CustomException
+     */
+    private static function accountOpening(mixed $baseurl, array $params): mixed
+    {
+        $apiKey = config('services.accountOpening.apiKey');
         try {
             ini_set('max_execution_time', 240);
             $response = Http::withHeaders([
@@ -77,7 +117,7 @@ class ImperialMortgage
                 'Content-Type' => 'application/json',
             ])->connectTimeout(30)
                 ->timeout(180)
-                ->post($baseurl.'/CreateAccount', $params);
+                ->post($baseurl, $params);
 
             $responseData = $response->json();
             if (($responseData['status'] ?? null) !== 'success') {
@@ -89,12 +129,7 @@ class ImperialMortgage
             }
             return $accountNumber;
         } catch (Exception $e) {
-            throw new CustomException('An error occurred while creating account: '.$e->getMessage());
+            throw new CustomException('An error occurred while creating account: ' . $e->getMessage());
         }
-    }
-
-    public static function createMerchantAccount(array $data): string
-    {
-        return '9199999999';
     }
 }

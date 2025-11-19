@@ -11,6 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::create('corporate_accounts', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('account_type_id')->constrained('account_types');
             $table->string('account_number')->nullable();
@@ -27,6 +28,7 @@ return new class () extends Migration {
             $table->string('account_officer')->nullable();
             $table->string('cac', 1000)->nullable();
             $table->json('signatories')->nullable();
+            $table->json('directors')->nullable();
             $table->json('referees')->nullable();
             $table->boolean('debit_card')->default(false);
             $table->softDeletes();

@@ -5,6 +5,8 @@ namespace App\Services\Account;
 use App\Exceptions\CustomException;
 use App\Helpers\FileUploadHelper;
 use App\Jobs\AccountNotificationJob;
+use App\Models\Account\CorporateAccount;
+use App\Models\Account\Director;
 use App\Models\Account\Document;
 use App\Models\Account\IndividualAccount;
 use App\Models\Account\MerchantAccount;
@@ -45,8 +47,7 @@ class AccountService
     {
         //Get user account data from user using the BVN and Check if user has such account
         $userData = User::whereBvn($data['bvn'])->firstOrFail()->toArray();
-        ;
-        self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id']);
+        self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'INDIVIDUAL');
 
         //Create user individual account
         $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
@@ -82,10 +83,9 @@ class AccountService
     {
         //Get user account data from user using the BVN and Check if user has such account
         $userData = User::whereBvn($data['bvn'])->firstOrFail()->toArray();
-        ;
-        self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id']);
+        self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'MERCHANT');
 
-        //Create user individual account
+        //Create user merchant account
         $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
         $userData['account_type'] = $accountType->code;
         $accountNumber = ImperialMortgage::createMerchantAccount($userData);
@@ -106,14 +106,78 @@ class AccountService
         return $accountNumber;
     }
 
+    /**
+     * @throws Throwable
+     * @throws CustomException
+     */
+    public static function corporateAccount(array $data): string
+    {
+        //Get user account data from user using the BVN and Check if user has such account
+        $userData = User::whereBvn($data['bvn'])->firstOrFail()->toArray();
+        self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'CORPORATE');
+
+        //Create user corporate account
+        $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
+        $data['account_type'] = $accountType->code;
+        $accountNumber = ImperialMortgage::createCorporateAccount($data);
+
+        //Save Account Data
+        DB::transaction(static function () use ($userData, $accountNumber, $data) {
+            //Upload Signatories
+            $signatoryIds = [];
+            if (!empty($data['signatory'])) {
+                foreach ($data['signatory'] as $signatory) {
+                    $uploaded = self::processDocuments($signatory);
+                    $document = Document::create($uploaded);
+                    $signatoryIds[] = $document->id;
+                }
+            }
+
+            //Create user bank referee and store the cac
+            $data['referees'] = [];
+            if (!empty($data['referee'])) {
+                $data['referees'] = self::processReferees($data['referee']);
+            }
+            $data['cac'] = isset($data['cac']) && $data['cac'] instanceof UploadedFile ? FileUploadHelper::uploadFile($data['cac']) : null;
+
+            //Save account directors
+            $directorsId = [];
+            if (!empty($data['director'])) {
+                foreach ($data['director'] as $director) {
+                    $directorsId[] = Director::create($director)->id;
+                }
+            }
+
+            //Create corporate Account
+            $data['signatories'] = $signatoryIds;
+            $data['directors'] = $directorsId;
+            $data['account_number'] = $accountNumber;
+            $data['user_id'] = $userData['id'];
+            CorporateAccount::create($data);
+        });
+
+        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name);
+        return $accountNumber;
+    }
+
 
     /**
      * @throws CustomException
      */
-    private static function ensureAccountDoesNotExist(int $userId, int $accountTypeId): void
+    private static function ensureAccountDoesNotExist(int $userId, int $accountTypeId, string $type): void
     {
-        if (IndividualAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId)->exists()) {
-            throw new CustomException('BVN already exist for such account', 409);
+        $query = match (strtoupper($type)) {
+            'INDIVIDUAL' => IndividualAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),
+            'MERCHANT' => MerchantAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),
+            'CORPORATE' => CorporateAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),
+            default => null
+        };
+
+        if (!$query) {
+            throw new CustomException('Invalid account type', 400);
+        }
+        if ($query->exists()) {
+            throw new CustomException('BVN already exists for such account', 409);
         }
     }
 
@@ -136,6 +200,7 @@ class AccountService
             'signature'    => FileUploadHelper::uploadFile($data['signature']),
             'utility_bill' => FileUploadHelper::uploadFile($data['utility_bill']),
             'passport'     => FileUploadHelper::uploadFile($data['passport']),
+            'name' => $data['name'] ?? '',
         ];
     }
 
