@@ -65,7 +65,7 @@ class ImperialMortgage
             'Address' => $residential_address,
             'AccountType' => $data['account_type'],
             'Gender' => $data['gender'],
-            'PhoneNumber' => $data['phone_number'],
+            'PhoneNumber' => '0'.substr($data['phone_number'], -10),
             'Email' => $data['email'],
         ];
 
@@ -88,7 +88,7 @@ class ImperialMortgage
             'tin' =>  $data['tin'],
             'OfficeAddress' => $data['address'],
             'AccountType' => $data['account_type'],
-            'OfficePhoneNumber' => $data['phone_number'],
+            'OfficePhoneNumber' => '0'. substr($data['phone_number'], -10),
             'OfficeEmail' => $data['business_email'],
             'Director1SurName' => $data['director'][0]['lastname'],
             'Director1FirstName' => $data['director'][0]['firstname'],

@@ -45,4 +45,11 @@ return [
         'apiKey' => env('IMPERIAL_ACCOUNT_OPENING_API_KEY'),
     ],
 
+    'bluSalt' => [
+        'baseUrl' => env('BLUSALT_BASE_URL'),
+        'apiKey' => env('BLUSALT_API_KEY'),
+        'clientId' => env('BLUSALT_CLIENT_ID'),
+        'appName' => env('BLUSALT_APP_NAME'),
+    ],
+
 ];

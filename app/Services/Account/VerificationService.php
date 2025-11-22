@@ -34,7 +34,6 @@ class VerificationService
 
 
     /**
-     * @throws CustomException
      * @throws RandomException
      */
     public static function verifyOtpCode(string $otpCode, string $reference, string $code): array
@@ -98,11 +97,18 @@ class VerificationService
      */
     private static function bvnVerification(string $bvn): array
     {
+        //Manual check if user bvn already exist in the db
+        $userBvnData = User::whereBvn($bvn)->first();
+        if ($userBvnData) {
+            return ['UserEmail' => $userBvnData->accountData()['email'],
+                    'UserPhoneNo' => $userBvnData->accountData()['phone_number']];
+        }
+
+        //Consume provider if user bvn is not saved before
         $providers = [
             fn () => ImperialMortgage::verifyBvn($bvn),
             fn () => BluSalt::verifyBvn($bvn),
         ];
-
         foreach ($providers as $provider) {
             $response = $provider();
             if (($response['statusCode'] ?? null) === 200) {
@@ -112,5 +118,7 @@ class VerificationService
         }
         throw new CustomException('Invalid BVN provided. Please try again.', 404);
     }
+
+
 
 }
