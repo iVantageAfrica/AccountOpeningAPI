@@ -27,7 +27,7 @@ class ImperialMortgage
                 'Content-Type' => 'application/json',
             ])->connectTimeout(30)
                 ->timeout(180)
-                ->post($baseurl.'/bvnval/OPsVerifyInfo', $params);
+                ->post($baseurl.'/bvnval/OPsVerifyInfo', $params)->json();
 
             return match ($response['responseCode'] ?? null) {
                 '01' => [

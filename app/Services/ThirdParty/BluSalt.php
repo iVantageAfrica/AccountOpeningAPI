@@ -30,13 +30,8 @@ class BluSalt
                 ->timeout(180)
                 ->post($baseUrl . '/v2/IdentityVerification/BVN', $params);
 
-            if (!$response->successful()) {
-                throw new CustomException($responseData['description'] ?? 'Verification failed');
-            }
-
             $responseData = $response->json();
-            return match ($responseData['status']) {
-                400 => throw new CustomException($responseData['description'] ?? 'Invalid BVN, Unable to retrieve details'),
+            return match ($responseData['status_code'] ?? 500) {
                 200 => (static function () use ($responseData, $bvnNumber) {
                     $resultMap = [
                         'SeqRef' => $responseData['results']['request_reference'] ?? '',
@@ -68,10 +63,10 @@ class BluSalt
                         'data' => $resultMap,
                     ];
                 })(),
-                default => throw new CustomException($responseData ['description'] ?? 'Unknown error'),
+                default => throw new CustomException($responseData ['description'] ?? 'Invalid BVN, Unable to retrieve details'),
             };
         } catch (Exception $ex) {
-            throw new CustomException($ex->getMessage(), $ex->getCode());
+            throw new CustomException('Invalid BVN, Unable to retrieve details');
         }
     }
 }
