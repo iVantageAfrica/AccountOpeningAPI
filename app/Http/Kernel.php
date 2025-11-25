@@ -2,7 +2,7 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\AdminAccess;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -44,6 +44,6 @@ class Kernel extends HttpKernel
      */
     protected $middlewareAliases = [
         'access.token' => \App\Http\Middleware\AccessToken::class,
-//        'access.administrative' => AdminMiddleware::class,
+        'access.administrative' => AdminAccess::class,
     ];
 }
