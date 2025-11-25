@@ -41,7 +41,6 @@ class UtilityController extends Controller
     }
 
     /**
-     * @throws CustomException
      * @throws RandomException
      */
     public function verifyOtp(Request $request): JsonResponse

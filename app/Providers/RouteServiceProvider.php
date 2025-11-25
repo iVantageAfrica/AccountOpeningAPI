@@ -32,6 +32,7 @@ class RouteServiceProvider extends ServiceProvider
                 function () {
                     $this->utilityRoutes();
                     $this->accountRoutes();
+                    $this->adminRoutes();
                 }
             );
     }
@@ -51,6 +52,15 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(function () {
                 include base_path('routes/v1/account.php');
+            });
+    }
+
+    public function adminRoutes(): void
+    {
+        Route::prefix('api/v1/admin/')
+            ->namespace($this->namespace)
+            ->group(function () {
+                include base_path('routes/v1/admin.php');
             });
     }
 

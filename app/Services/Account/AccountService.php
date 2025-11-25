@@ -68,6 +68,7 @@ class AccountService
             //Create Individual Account
             $data['account_number'] = $accountNumber;
             $data['user_id'] = $userData['id'];
+            $data['address'] = $data['house_number'].', '.$data['street'].', '.$data['city'].', '.$data['state'];
             IndividualAccount::create($data);
         });
 

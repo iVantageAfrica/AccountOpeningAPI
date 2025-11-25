@@ -30,6 +30,7 @@ return new class () extends Migration {
             $table->json('signatories')->nullable();
             $table->json('directors')->nullable();
             $table->json('referees')->nullable();
+            $table->string('status')->nullable();
             $table->boolean('debit_card')->default(false);
             $table->softDeletes();
             $table->timestamps();

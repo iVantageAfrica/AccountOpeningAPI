@@ -28,4 +28,15 @@ class FileUploadHelper
         return rtrim(config('app.url'), '/') . Storage::url($path);
     }
 
+    public static function buildDocumentPath(?string $filename): ?string
+    {
+        if (!$filename) {
+            return null;
+        }
+        if (str_starts_with($filename, 'http')) {
+            return $filename;
+        }
+        return self::getPublicUrl("documents/{$filename}");
+    }
+
 }

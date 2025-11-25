@@ -69,7 +69,7 @@ class CorporateAccount extends Model
     use HasFactory;
     use SoftDeletes;
     protected $fillable = [
-        'user_id', 'account_type_id','account_number', 'company_name','registration_number','company_type','tin',
+        'user_id', 'account_type_id','account_number', 'company_name','registration_number','company_type','tin','status',
         'address','phone_number','business_email','city', 'lga','state','account_officer','cac','signatories','referees',
         'debit_card','directors',
     ];

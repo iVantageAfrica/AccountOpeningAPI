@@ -27,6 +27,8 @@ return [
     */
 
     'env' => env('APP_ENV', 'production'),
+    'jwt_secret' => env('JWT_SECRET', ''),
+    'jwt_expiration' => env('JWT_EXPIRATION', 60),
 
     /*
     |--------------------------------------------------------------------------
