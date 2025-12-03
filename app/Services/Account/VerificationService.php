@@ -39,7 +39,7 @@ class VerificationService
     public static function verifyOtpCode(string $otpCode, string $reference, string $code): array
     {
         if ($code !== $otpCode) {
-            throw new ValidationException('Unauthorized OTP code.');
+            throw new ValidationException('Invalid OTP code.');
         }
         $otpRecord = Otp::whereCode($otpCode)->first();
         if (!$otpRecord || strcasecmp($otpRecord->email_address, $reference) !== 0) {

@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Account\IndividualAccount;
+use App\Traits\DateScope;
 use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -50,6 +53,7 @@ class User extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use DateScope;
     protected $fillable = [
         'bvn', 'nin','firstname', 'lastname', 'middle_name','email','phone_number','address','gender','date_of_birth',
     ];
@@ -57,5 +61,15 @@ class User extends Model
     public function accountData(): array
     {
         return $this->only(['bvn', 'nin', 'firstname', 'lastname', 'middle_name', 'email','phone_number', 'address','gender', 'date_of_birth']);
+    }
+
+    public function savingsAccount(): HasOne
+    {
+        return $this->hasOne(IndividualAccount::class)->where('account_type_id', 2);
+    }
+
+    public function currentAccount(): HasOne
+    {
+        return $this->hasOne(IndividualAccount::class)->where('account_type_id', 1);
     }
 }

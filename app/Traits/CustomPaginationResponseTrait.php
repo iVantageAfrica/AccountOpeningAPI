@@ -31,7 +31,7 @@ trait CustomPaginationResponseTrait
         if ($search && !empty($searchableColumns)) {
             $query->where(function ($q) use ($search, $searchableColumns) {
                 foreach ($searchableColumns as $column) {
-                    $q->orWhere($column, 'like', "%{$search}%");
+                    $q->orWhere($column, 'ILIKE', "%{$search}%");
                 }
             });
         }

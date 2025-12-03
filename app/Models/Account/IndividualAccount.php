@@ -91,11 +91,6 @@ class IndividualAccount extends Model
         return $this->belongsTo(Document::class);
     }
 
-    public function referees(): BelongsTo
-    {
-        return $this->belongsTo(Referee::class);
-    }
-
     protected $casts = [
         'referees' => 'array',
         'debit_card' => 'boolean',

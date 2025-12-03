@@ -32,7 +32,7 @@ return new class () extends Migration {
             $table->string('referrer')->nullable();
             $table->string('occupation')->nullable();
             $table->boolean('debit_card')->default(false);
-            $table->string('status')->nullable();
+            $table->string('status')->default('Pending');
             $table->softDeletes();
             $table->timestamps();
         });

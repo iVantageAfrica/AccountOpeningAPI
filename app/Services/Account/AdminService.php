@@ -10,6 +10,7 @@ use App\Models\Account\Referee;
 use App\Models\Admin;
 use App\Models\User;
 use App\Services\Utility\JWTTokenService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use JsonException;
 use Random\RandomException;
@@ -33,6 +34,64 @@ class AdminService
             'token' => JWTTokenService::generateToken($admin->adminInformation()),
             'adminInformation' => $admin->adminInformation(),
         ];
+    }
+
+    public static function customerList(): Builder
+    {
+        return User::with(['savingsAccount', 'currentAccount'])
+            ->orderByDesc('id');
+    }
+
+    public static function customerSummary(): array
+    {
+        return  [
+            'totalCustomers' => User::count(),
+            'weeklyCustomers' => User::thisWeek()->count(),
+            'monthlyCustomers' => User::thisMonth()->count(),
+            'lastMonth' => User::lastMonth()->count(),
+        ];
+    }
+
+    public static function individualAccount(string|int $accountTypeId): Builder
+    {
+        return IndividualAccount::whereAccountTypeId($accountTypeId)
+            ->with('user')
+            ->orderByDesc('id');
+    }
+
+    public static function individualAccountSummary(string|int $accountTypeId): array
+    {
+        $summary = IndividualAccount::where('account_type_id', $accountTypeId)
+            ->selectRaw('
+            COUNT(*) AS "totalAccount",
+            COUNT(CASE WHEN LOWER(status) = \'pending\' THEN 1 END) AS "pendingAccount",
+            COUNT(CASE WHEN LOWER(status) = \'approved\' THEN 1 END) AS "approvedAccount",
+            COUNT(CASE WHEN LOWER(status) LIKE \'awt%\' THEN 1 END) AS "awaitingAccount"
+        ')->first();
+
+        return $summary?->toArray() ?? [
+            'totalAccount' => 0,
+            'pendingAccount' => 0,
+            'approvedAccount' => 0,
+            'awaitingAccount' => 0,
+        ];
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function fetchIndividualAccount(string|int $accountNumber): Builder|IndividualAccount|null
+    {
+        $accountDetails = IndividualAccount::whereAccountNumber($accountNumber)
+            ->with(['user', 'document'])
+            ->first();
+
+        if (!$accountDetails) {
+            throw new CustomException('Invalid account number', 404);
+        }
+        $refereeIds = $accountDetails->referees ?? [];
+        $accountDetails->setRelation('referees', Referee::whereIn('id', $refereeIds)->get());
+        return $accountDetails;
     }
 
     /**
