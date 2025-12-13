@@ -42,6 +42,11 @@ class MessageService
         self::mailMessage($userData->email, 'Account Creation', 'emails.accountCreation', $data);
     }
 
+    public static function accountReferenceMessage(array $data): void
+    {
+        self::mailMessage($data['email'], 'Request for Account Reference Confirmation', 'emails.accountReference', $data);
+    }
+
     public static function mailMessage(string $emailAddress, string $subject, string $viewName, array $data = []): void
     {
         Mail::send(

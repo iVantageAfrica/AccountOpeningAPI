@@ -4,6 +4,7 @@ namespace App\Services\Account;
 
 use App\Exceptions\CustomException;
 use App\Helpers\FileUploadHelper;
+use App\Models\Account\DebitCardRequest;
 use App\Models\Account\Document;
 use App\Models\Account\IndividualAccount;
 use App\Models\Account\Referee;
@@ -11,6 +12,7 @@ use App\Models\Admin;
 use App\Models\User;
 use App\Services\Utility\JWTTokenService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
 use JsonException;
 use Random\RandomException;
@@ -94,6 +96,13 @@ class AdminService
         return $accountDetails;
     }
 
+    public static function listCardsRequest(): Collection
+    {
+        return DebitCardRequest::with(['user', 'accountType'])
+            ->orderByDesc('id')
+            ->get();
+    }
+
     /**
      * @throws JsonException
      */
@@ -172,6 +181,7 @@ class AdminService
                 'document_id' => $documentId,                                        'referees' => $refereeId ?? null,
                 'debit_card' => false,
             ]);
+
         }
     }
 

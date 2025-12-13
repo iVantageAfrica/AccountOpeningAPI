@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AuthenticateRequest;
+use App\Http\Resources\Account\DebitCardResource;
 use App\Http\Resources\Account\IndividualAccountResource;
 use App\Http\Resources\Account\UserResource;
 use App\Services\Account\AdminService;
@@ -70,6 +71,12 @@ class AdminController extends Controller
     {
         ['accountNumber' => $accountNumber] = QueryParamValidator::getRequiredParams($request, ['accountNumber']);
         return $this->successDataResponse(IndividualAccountResource::make(AdminService::fetchIndividualAccount($accountNumber), true));
+    }
+
+    public function listDebitCardRequest(): JsonResponse
+    {
+        $debitCardRequest = AdminService::listCardsRequest();
+        return $this->successDataResponse(new DebitCardResource($debitCardRequest));
     }
 
     /**

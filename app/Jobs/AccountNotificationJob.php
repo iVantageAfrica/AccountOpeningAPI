@@ -19,15 +19,17 @@ class AccountNotificationJob implements ShouldQueue
     protected string $bvn;
     protected string $accountNumber;
     protected string $accountType;
+    protected string $bankAccountReferenceUrl;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $bvn, string $accountNumber, string $accountType)
+    public function __construct(string $bvn, string $accountNumber, string $accountType, string $bankAccountReferenceUrl)
     {
         $this->bvn = $bvn;
         $this->accountNumber = $accountNumber;
         $this->accountType = $accountType;
+        $this->bankAccountReferenceUrl = $bankAccountReferenceUrl;
     }
 
     /**
@@ -39,6 +41,7 @@ class AccountNotificationJob implements ShouldQueue
             'bvn' => $this->bvn,
             'accountNumber' => $this->accountNumber,
             'accountType' => $this->accountType,
+            'accountReferenceUrl' => $this->bankAccountReferenceUrl,
         ]);
     }
 }

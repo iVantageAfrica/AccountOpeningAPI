@@ -3,9 +3,12 @@
 namespace App\Services\Account;
 
 use App\Exceptions\CustomException;
+use App\Helpers\EncryptionHelper;
 use App\Helpers\FileUploadHelper;
 use App\Jobs\AccountNotificationJob;
+use App\Jobs\AccountReferenceJob;
 use App\Models\Account\CorporateAccount;
+use App\Models\Account\DebitCardRequest;
 use App\Models\Account\Director;
 use App\Models\Account\Document;
 use App\Models\Account\IndividualAccount;
@@ -16,6 +19,7 @@ use App\Models\Utility\AccountType;
 use App\Services\ThirdParty\ImperialMortgage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Random\RandomException;
 use Throwable;
 
 class AccountService
@@ -70,9 +74,15 @@ class AccountService
             $data['user_id'] = $userData['id'];
             $data['address'] = $data['house_number'].', '.$data['street'].', '.$data['city'].', '.$data['state'];
             IndividualAccount::create($data);
+
+            //Save user card request
+            if ($data['debit_card']) {
+                DebitCardRequest::create($data);
+            }
         });
 
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name);
+        $bankAccountReferenceUrl = self::generateAccountReferenceUrl($accountNumber, $data['account_type_id'], $userData['firstname'].' '.$userData['lastname']);
+        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name, $bankAccountReferenceUrl);
         return $accountNumber;
     }
 
@@ -101,6 +111,11 @@ class AccountService
             $data['account_number'] = $accountNumber;
             $data['user_id'] = $userData['id'];
             MerchantAccount::create($data);
+
+            //Save user card request
+            if ($data['debit_card']) {
+                DebitCardRequest::create($data);
+            }
         });
 
         AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name);
@@ -155,10 +170,43 @@ class AccountService
             $data['account_number'] = $accountNumber;
             $data['user_id'] = $userData['id'];
             CorporateAccount::create($data);
+
+            //Save user card request
+            if ($data['debit_card']) {
+                DebitCardRequest::create($data);
+            }
         });
 
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name);
+        $bankAccountReferenceUrl = self::generateAccountReferenceUrl($accountNumber, $data['account_type_id'], $data['company_name']);
+        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name, $bankAccountReferenceUrl);
         return $accountNumber;
+    }
+
+
+    /**
+     * @throws RandomException
+     */
+    public static function addBankAccountReference(array $data): bool
+    {
+        //Process the reference
+        $refereeId = self::processReferees($data['referee']);
+        match ($data['account_type_id']) {
+            1 => IndividualAccount::whereAccountNumber($data['account_number'])->update(['referees' => $refereeId]),
+            2 => CorporateAccount::whereAccountNumber($data['account_number'])->update(['referees' => $refereeId]),
+            default => 'Invalid Account type Id'
+        };
+
+        //Pluck the emails out to send mail
+        foreach ($data['referee'] as $index => $referee) {
+            $mailData = [
+                'name' => $referee['name'],
+                'account_name' => $data['account_name'],
+                'email' => $referee['email_address'],
+                'url' => self::generateAccountReferenceSubmissionUrl($data['account_number'], $data['account_type_id'], $data['account_name'], $refereeId[$index]),
+            ];
+            AccountReferenceJob::dispatch($mailData);
+        }
+        return true;
     }
 
 
@@ -203,6 +251,36 @@ class AccountService
             'passport'     => FileUploadHelper::uploadFile($data['passport']),
             'name' => $data['name'] ?? '',
         ];
+    }
+
+    /**
+     * @throws RandomException
+     */
+    private static function generateAccountReferenceUrl(string $accountNumber, int $accountTypeId, string $accountName): string|null
+    {
+        if ($accountTypeId === 2) {
+            return null;
+        }
+        $encryptedAccountNumber = urlencode(EncryptionHelper::secureTestString($accountNumber));
+        $encryptedAccountType = urlencode(EncryptionHelper::secureTestString($accountTypeId));
+        $encryptedAccountName = urlencode(EncryptionHelper::secureTestString($accountName));
+        return 'http://localhost:3000/verification/account-reference?acc='.$encryptedAccountNumber.'&ty='.$encryptedAccountType.'&acNa='.$encryptedAccountName;
+    }
+
+    /**
+     * @throws RandomException
+     */
+    private static function generateAccountReferenceSubmissionUrl(string $accountNumber, int $accountTypeId, string $accountName, $refereeId): string
+    {
+        $encryptedAccountNumber = urlencode(EncryptionHelper::secureTestString($accountNumber));
+        $encryptedAccountType = urlencode(EncryptionHelper::secureTestString($accountTypeId));
+        $encryptedAccountName = urlencode(EncryptionHelper::secureTestString($accountName));
+        $encryptedRefereeId = urlencode(EncryptionHelper::secureTestString($refereeId));
+        return 'http://localhost:3000/verification/reference-submission?
+                acc='.$encryptedAccountNumber.
+                '&ty='.$encryptedAccountType.
+                '&acNa='.$encryptedAccountName.
+                '&refId='.$encryptedRefereeId;
     }
 
 }

@@ -14,5 +14,7 @@ Route::controller(AdminController::class)->group(function () {
         Route::get('savings-account-summary', 'savingsAccountSummary');
         Route::get('current-account-summary', 'currentAccountSummary');
         Route::get('data-link', 'dataLink');
+
+        Route::get('debit-card-requests', 'listDebitCardRequest');
     });
 });

@@ -11,7 +11,6 @@ use App\Models\Utility\Otp;
 use App\Services\ThirdParty\BluSalt;
 use App\Services\ThirdParty\ImperialMortgage;
 use Carbon\Carbon;
-use Nette\Schema\ValidationException;
 use Random\RandomException;
 
 class VerificationService
@@ -34,22 +33,23 @@ class VerificationService
 
 
     /**
+     * @throws CustomException
      * @throws RandomException
      */
     public static function verifyOtpCode(string $otpCode, string $reference, string $code): array
     {
         if ($code !== $otpCode) {
-            throw new ValidationException('Invalid OTP code.');
+            throw new CustomException('Invalid OTP code.');
         }
         $otpRecord = Otp::whereCode($otpCode)->first();
         if (!$otpRecord || strcasecmp($otpRecord->email_address, $reference) !== 0) {
-            throw new ValidationException(message: 'Invalid OTP code.');
+            throw new CustomException(message: 'Invalid OTP code.');
         }
         if (!$otpRecord->status) {
-            throw new ValidationException(message: 'OTP code already used. Kindly contact support.');
+            throw new CustomException(message: 'OTP code already used. Kindly contact support.');
         }
         if (Carbon::parse($otpRecord->expires_at)->isPast()) {
-            throw new ValidationException(message: 'OTP code expired. Kindly request for a new one.');
+            throw new CustomException(message: 'OTP code expired. Kindly request for a new one.');
         }
 
         $data = ($otpRecord->purpose === OtpPurpose::BVN_VALIDATION->value)
