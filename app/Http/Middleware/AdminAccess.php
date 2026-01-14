@@ -25,14 +25,14 @@ class AdminAccess
     {
         $token = JWTTokenService::extractToken($request);
         if (!$token || JWTTokenService::isTokenBlacklisted($token)) {
-            return $this->errorResponse(401, 'Unauthorized - No token');
+            return $this->errorResponse(501, 'Unauthorized - No token');
         }
         $decryptToken = JWTTokenService::decodeToken($token);
         if (!$decryptToken) {
-            return $this->errorResponse(401, message: 'Unauthorized - Invalid token');
+            return $this->errorResponse(501, message: 'Unauthorized - Invalid token');
         }
         if (empty($decryptToken) || empty($decryptToken['isAdmin']) || !is_numeric($decryptToken['id'])) {
-            return $this->errorResponse(401, message: 'Unauthorized - Invalid Administrative token');
+            return $this->errorResponse(501, message: 'Unauthorized - Invalid Administrative token');
         }
         $request->setUserResolver(fn () => (object) $decryptToken);
         return $next($request);

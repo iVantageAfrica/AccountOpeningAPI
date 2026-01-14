@@ -16,20 +16,16 @@ class AccountNotificationJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    protected string $bvn;
-    protected string $accountNumber;
-    protected string $accountType;
-    protected string $bankAccountReferenceUrl;
-
     /**
      * Create a new job instance.
      */
-    public function __construct(string $bvn, string $accountNumber, string $accountType, string $bankAccountReferenceUrl)
-    {
-        $this->bvn = $bvn;
-        $this->accountNumber = $accountNumber;
-        $this->accountType = $accountType;
-        $this->bankAccountReferenceUrl = $bankAccountReferenceUrl;
+    public function __construct(
+        public readonly string $bvn,
+        public readonly string $accountNumber,
+        public readonly int $accountTypeId,
+        public readonly string $accountType,
+        public readonly ?string $bankAccountReferenceUrl,
+    ) {
     }
 
     /**
@@ -40,6 +36,7 @@ class AccountNotificationJob implements ShouldQueue
         MessageService::accountCreationMessage([
             'bvn' => $this->bvn,
             'accountNumber' => $this->accountNumber,
+            'accountTypeId' => $this->accountTypeId,
             'accountType' => $this->accountType,
             'accountReferenceUrl' => $this->bankAccountReferenceUrl,
         ]);

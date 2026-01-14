@@ -13,6 +13,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $email_address
  * @property string|null $phone_number
  * @property string|null $mobile_number
+ * @property string|null $bank_name
+ * @property string|null $account_name
+ * @property string|null $account_number
+ * @property string|null $account_type
+ * @property string|null $signature
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee newModelQuery()
@@ -25,12 +30,17 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee wherePhoneNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereAccountName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereAccountType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereAccountNumber($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereBankName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereSignature($value)
  * @mixin Eloquent
  */
 class Referee extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name', 'email_address','phone_number', 'mobile_number',
+        'name', 'email_address','phone_number', 'mobile_number', 'account_number', 'account_name','account_type', 'bank_name', 'signature',
     ];
 }

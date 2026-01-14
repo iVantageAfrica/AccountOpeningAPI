@@ -34,6 +34,7 @@ class DebitCardResource extends ResourceCollection
                     'accountNumber' => $item->account_number,
                     'status' => $item->status,
                     'firstname' => $item->user->firstname ?? null,
+                    'phoneNumber' => $item->user->phone_number ?? null,
                     'lastname' => $item->user->lastname ?? null,
                     'accountType' => $item->accountType->name ?? null,
                     'createdAt' => $item->created_at,

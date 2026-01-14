@@ -7,7 +7,7 @@
 
         <p style="line-height: 30px; font-size: 16px; margin: 0;">Account Number: <b>{{ $accountNumber }}</b> <br> Account Type: <b>{{ $accountType }}</b></p>
         <br />
-        @if(!empty($accountReferenceUrl))
+        @if(!empty($accountReferenceUrl) &&  $accountTypeId === 1 )
         <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">As part
             of completing your account setup, <b>please provide two bank account referees.</b>
             You can submit your bank references by clicking the link below:</p>
@@ -15,10 +15,18 @@
         <br><br>
         @endif
 
+        @if(!empty($accountReferenceUrl) &&  $accountTypeId === 3 )
+            <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">As part
+                of completing your account setup, <b>please provide two bank account referees and upload your company documents.</b>
+                Kindly click the link below to complete your setup:</p>
+            <a href="{{ $accountReferenceUrl }}" style=" color:#DE4F01">{{ $accountReferenceUrl }}</a>
+            <br><br>
+        @endif
+
 {{--        <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">--}}
 {{--            You can now access your account and continue with transactions securely through our internet banking platform. Simply log in with your registered credentials to view your account, make transfers, and manage your finances conveniently.--}}
 {{--        </p>--}}
-        <p class="">
+        <p style="line-height: 30px; font-size: 16px; margin: 0;">
             For your security, please keep your account details confidential and ensure your login information is not shared with anyone.
         </p>
         <p style="line-height: 30px; font-size: 16px; margin: 0;">

@@ -10,17 +10,21 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('referees', function (Blueprint $table) {
+        Schema::create('signatories', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
             $table->string('email_address')->nullable();
             $table->string('phone_number')->nullable();
-            $table->string('mobile_number')->nullable();
-            $table->string('account_number')->nullable();
-            $table->string('account_name')->nullable();
-            $table->string('bank_name')->nullable();
-            $table->string('account_type')->nullable();
+            $table->string('bvn')->nullable();
+            $table->string('nin')->nullable();
             $table->longText('signature')->nullable();
+            $table->longText('passport')->nullable();
+            $table->longText('proof_of_address')->nullable();
+            $table->longText('specimen_signature')->nullable();
+            $table->longText('partnership_deed')->nullable();
+            $table->longText('mode_of_operation')->nullable();
+            $table->longText('joint_mandate')->nullable();
+            $table->longText('board_approve')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +34,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('referees');
+        Schema::dropIfExists('table_signatories');
     }
 };

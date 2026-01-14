@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AuthenticateRequest;
+use App\Http\Resources\Account\CorporateAccountResource;
 use App\Http\Resources\Account\DebitCardResource;
 use App\Http\Resources\Account\IndividualAccountResource;
 use App\Http\Resources\Account\UserResource;
@@ -64,6 +65,18 @@ class AdminController extends Controller
         return $this->successDataResponse(AdminService::individualAccountSummary(1));
     }
 
+    public function listCorporateAccount(Request $request): JsonResponse
+    {
+        $corporateAccount = AdminService::corporateAccountList();
+        return $this->customPaginationResponse($corporateAccount, $request, CorporateAccountResource::class, ['account_number', 'status']);
+    }
+
+    public function corporateAccountSummary(Request $request): JsonResponse
+    {
+        return $this->successDataResponse(AdminService::corporateAccountSummary());
+    }
+
+
     /**
      * @throws CustomException
      */
@@ -71,6 +84,15 @@ class AdminController extends Controller
     {
         ['accountNumber' => $accountNumber] = QueryParamValidator::getRequiredParams($request, ['accountNumber']);
         return $this->successDataResponse(IndividualAccountResource::make(AdminService::fetchIndividualAccount($accountNumber), true));
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function fetchCorporateAccount(Request $request): JsonResponse
+    {
+        ['accountNumber' => $accountNumber] = QueryParamValidator::getRequiredParams($request, ['accountNumber']);
+        return $this->successDataResponse(CorporateAccountResource::make(AdminService::fetchCorporateAccount($accountNumber), true));
     }
 
     public function listDebitCardRequest(): JsonResponse

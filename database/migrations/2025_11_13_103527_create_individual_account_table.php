@@ -22,6 +22,7 @@ return new class () extends Migration {
             $table->string('employer')->nullable();
             $table->string('employer_address')->nullable();
             $table->string('marital_status')->nullable();
+            $table->string('origin')->nullable();
             $table->string('address')->nullable();
             $table->string('next_of_kin_name')->nullable();
             $table->string('next_of_kin_address')->nullable();

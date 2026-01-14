@@ -14,10 +14,11 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('account_type_id')->constrained('account_types');
+            $table->foreignId('company_document_id')->nullable()->constrained('company_documents');
+            $table->foreignId('company_type_id')->constrained('company_types');
             $table->string('account_number')->nullable();
             $table->string('company_name')->nullable();
             $table->string('registration_number')->nullable();
-            $table->string('company_type')->nullable();
             $table->string('tin')->nullable();
             $table->string('address')->nullable();
             $table->string('phone_number')->nullable();
@@ -26,11 +27,10 @@ return new class () extends Migration {
             $table->string('lga')->nullable();
             $table->string('state')->nullable();
             $table->string('account_officer')->nullable();
-            $table->string('cac', 1000)->nullable();
             $table->json('signatories')->nullable();
-            $table->json('directors')->nullable();
+            $table->json('directories')->nullable();
             $table->json('referees')->nullable();
-            $table->string('status')->nullable();
+            $table->string('status')->default('Pending');
             $table->boolean('debit_card')->default(false);
             $table->softDeletes();
             $table->timestamps();

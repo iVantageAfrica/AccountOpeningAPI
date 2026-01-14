@@ -39,12 +39,19 @@ class MessageService
     {
         $userData = User::whereBvn($data['bvn'])->firstOrFail();
         $data['firstname'] = $userData->firstname;
-        self::mailMessage($userData->email, 'Account Creation', 'emails.accountCreation', $data);
+        $data['email'] = $userData->email;
+        self::mailMessage($userData->email, 'Account Creation Successful', 'emails.accountCreation', $data);
     }
 
     public static function accountReferenceMessage(array $data): void
     {
         self::mailMessage($data['email'], 'Request for Account Reference Confirmation', 'emails.accountReference', $data);
+    }
+
+    public static function accountSignatoryDirectoryMessage(array $data): void
+    {
+        $subject = $data['type'] === 'signatory' ? 'Request for Verification of Account Signatories' : 'Account Directory Confirmation Request';
+        self::mailMessage($data['email'], $subject, 'emails.signatoryDirectory', $data);
     }
 
     public static function mailMessage(string $emailAddress, string $subject, string $viewName, array $data = []): void

@@ -7,13 +7,16 @@ use App\Helpers\EncryptionHelper;
 use App\Helpers\FileUploadHelper;
 use App\Jobs\AccountNotificationJob;
 use App\Jobs\AccountReferenceJob;
+use App\Jobs\SignatoryDirectoryJob;
+use App\Models\Account\CompanyDocument;
 use App\Models\Account\CorporateAccount;
 use App\Models\Account\DebitCardRequest;
-use App\Models\Account\Director;
+use App\Models\Account\Directory;
 use App\Models\Account\Document;
 use App\Models\Account\IndividualAccount;
 use App\Models\Account\MerchantAccount;
 use App\Models\Account\Referee;
+use App\Models\Account\Signatory;
 use App\Models\User;
 use App\Models\Utility\AccountType;
 use App\Services\ThirdParty\ImperialMortgage;
@@ -82,7 +85,7 @@ class AccountService
         });
 
         $bankAccountReferenceUrl = self::generateAccountReferenceUrl($accountNumber, $data['account_type_id'], $userData['firstname'].' '.$userData['lastname']);
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name, $bankAccountReferenceUrl);
+        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $bankAccountReferenceUrl);
         return $accountNumber;
     }
 
@@ -136,33 +139,14 @@ class AccountService
         $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
         $data['account_type'] = $accountType->code;
         $accountNumber = ImperialMortgage::createCorporateAccount($data);
+        $directorsId = [];
+        $signatoryIds = [];
 
         //Save Account Data
-        DB::transaction(static function () use ($userData, $accountNumber, $data) {
-            //Upload Signatories
-            $signatoryIds = [];
-            if (!empty($data['signatory'])) {
-                foreach ($data['signatory'] as $signatory) {
-                    $uploaded = self::processDocuments($signatory);
-                    $document = Document::create($uploaded);
-                    $signatoryIds[] = $document->id;
-                }
-            }
-
-            //Create user bank referee and store the cac
-            $data['referees'] = [];
-            if (!empty($data['referee'])) {
-                $data['referees'] = self::processReferees($data['referee']);
-            }
-            $data['cac'] = isset($data['cac']) && $data['cac'] instanceof UploadedFile ? FileUploadHelper::uploadFile($data['cac']) : null;
-
-            //Save account directors
-            $directorsId = [];
-            if (!empty($data['director'])) {
-                foreach ($data['director'] as $director) {
-                    $directorsId[] = Director::create($director)->id;
-                }
-            }
+        DB::transaction(static function () use (&$directorsId, &$signatoryIds, $userData, $accountNumber, $data) {
+            //Save account directors and signatories
+            $directorsId = array_map(static fn ($directory) => Directory::create($directory)->id, $data['director'] ?? []);
+            $signatoryIds = array_map(static fn ($signatory) => Signatory::create($signatory)->id, $data['signatory'] ?? []);
 
             //Create corporate Account
             $data['signatories'] = $signatoryIds;
@@ -177,8 +161,18 @@ class AccountService
             }
         });
 
-        $bankAccountReferenceUrl = self::generateAccountReferenceUrl($accountNumber, $data['account_type_id'], $data['company_name']);
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name, $bankAccountReferenceUrl);
+        //Send User Notification
+        $companyDocumentUrl = 'http://localhost:3000/verification/company-document?' .
+            http_build_query([
+                'acc' => EncryptionHelper::secureTestString($accountNumber),
+                'ty' => EncryptionHelper::secureTestString($data['company_type_id']),
+                'bsNa' => EncryptionHelper::secureTestString($data['company_name']),
+            ]);
+        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $companyDocumentUrl);
+
+        //Generate Signatory and Directory Verification Links and send mails
+        self::dispatchSignatoryDirectoryJobs($data['director'] ?? [], $directorsId, $data['company_name'], 'directory', $data['company_type_id']);
+        self::dispatchSignatoryDirectoryJobs($data['signatory'] ?? [], $signatoryIds, $data['company_name'], 'signatory', $data['company_type_id']);
         return $accountNumber;
     }
 
@@ -192,7 +186,7 @@ class AccountService
         $refereeId = self::processReferees($data['referee']);
         match ($data['account_type_id']) {
             1 => IndividualAccount::whereAccountNumber($data['account_number'])->update(['referees' => $refereeId]),
-            2 => CorporateAccount::whereAccountNumber($data['account_number'])->update(['referees' => $refereeId]),
+            3 => CorporateAccount::whereAccountNumber($data['account_number'])->update(['referees' => $refereeId]),
             default => 'Invalid Account type Id'
         };
 
@@ -206,6 +200,58 @@ class AccountService
             ];
             AccountReferenceJob::dispatch($mailData);
         }
+        return true;
+    }
+
+    public static function updateBankAccountReference(array $data): bool
+    {
+        return Referee::whereId($data['referee_id'])
+            ->update([
+            'account_name' => $data['account_name'],
+            'account_type' => $data['account_type'],
+            'account_number' => $data['account_number'],
+            'bank_name' => $data['bank_name'],
+            'signature' => isset($data['signature']) && $data['signature'] instanceof UploadedFile
+                ? FileUploadHelper::uploadFile($data['signature']) : null,
+        ]);
+    }
+
+    /**
+     * @throws RandomException
+     */
+    public static function updateCorporateAccountCompanyDocument(array $data): bool
+    {
+        $accountDetails = CorporateAccount::whereAccountNumber($data['account_number'])->firstOrFail();
+        $data['account_type_id'] = $accountDetails->account_type_id;
+        $data['account_name'] = $accountDetails->company_name;
+
+        //Upload Company Document
+        $documentPayload = [];
+        foreach ((new CompanyDocument())->getFillable() as $field) {
+            if (isset($data[$field]) && $data[$field] instanceof UploadedFile) {
+                $documentPayload[$field] = FileUploadHelper::uploadFile($data[$field]);
+            }
+        }
+        $companyDocument = CompanyDocument::create($documentPayload);
+        $accountDetails->company_document_id = $companyDocument->id;
+        $accountDetails->save();
+        //Process referee
+        self::addBankAccountReference($data);
+        return true;
+    }
+
+    public static function updateDirectorySignatory(array $data): bool
+    {
+        $modelClass = $data['type'] === 'directory' ? Directory::class : Signatory::class;
+        $model = $modelClass::findOrFail($data['directorySignatoryId']);
+
+        $documentPayload = [];
+        foreach ($model->getFillable() as $field) {
+            if (isset($data[$field]) && $data[$field] instanceof UploadedFile) {
+                $documentPayload[$field] = FileUploadHelper::uploadFile($data[$field]);
+            }
+        }
+        $model->update($documentPayload);
         return true;
     }
 
@@ -261,10 +307,12 @@ class AccountService
         if ($accountTypeId === 2) {
             return null;
         }
-        $encryptedAccountNumber = urlencode(EncryptionHelper::secureTestString($accountNumber));
-        $encryptedAccountType = urlencode(EncryptionHelper::secureTestString($accountTypeId));
-        $encryptedAccountName = urlencode(EncryptionHelper::secureTestString($accountName));
-        return 'http://localhost:3000/verification/account-reference?acc='.$encryptedAccountNumber.'&ty='.$encryptedAccountType.'&acNa='.$encryptedAccountName;
+        $params = [
+            'acc'   => EncryptionHelper::secureTestString($accountNumber),
+            'ty'    => EncryptionHelper::secureTestString($accountTypeId),
+            'acNa'  => EncryptionHelper::secureTestString($accountName),
+        ];
+        return 'http://localhost:3000/verification/account-reference?' . http_build_query($params);
     }
 
     /**
@@ -272,15 +320,48 @@ class AccountService
      */
     private static function generateAccountReferenceSubmissionUrl(string $accountNumber, int $accountTypeId, string $accountName, $refereeId): string
     {
-        $encryptedAccountNumber = urlencode(EncryptionHelper::secureTestString($accountNumber));
-        $encryptedAccountType = urlencode(EncryptionHelper::secureTestString($accountTypeId));
-        $encryptedAccountName = urlencode(EncryptionHelper::secureTestString($accountName));
-        $encryptedRefereeId = urlencode(EncryptionHelper::secureTestString($refereeId));
-        return 'http://localhost:3000/verification/reference-submission?
-                acc='.$encryptedAccountNumber.
-                '&ty='.$encryptedAccountType.
-                '&acNa='.$encryptedAccountName.
-                '&refId='.$encryptedRefereeId;
+        $params = [
+            'acc'   => EncryptionHelper::secureTestString($accountNumber),
+            'ty'    => EncryptionHelper::secureTestString($accountTypeId),
+            'acNa'  => EncryptionHelper::secureTestString($accountName),
+            'refId' => EncryptionHelper::secureTestString($refereeId),
+        ];
+        return 'http://localhost:3000/verification/reference-submission?' . http_build_query($params);
+    }
+
+    /**
+     * @throws RandomException
+     */
+    private static function dispatchSignatoryDirectoryJobs(array $items, array $ids, string $companyName, string $type, string $companyTypeId): void
+    {
+        foreach ($items as $i => $item) {
+            $fullName = trim(($item['firstname'] ?? '') . ' ' . ($item['lastname'] ?? '')) ?: ($item['name'] ?? 'Unknown');
+            $mailData = [
+                'name' => $fullName,
+                'emailAddress' => $item['email_address'] ?? '',
+                'businessName' => $companyName,
+                'type' => $type,
+                'url' => self::generateAccountSignatoryDirectoryUrl($ids[$i], $fullName, $companyName, $type, $companyTypeId),
+            ];
+            SignatoryDirectoryJob::dispatch($mailData);
+        }
+    }
+
+    /**
+     * @throws RandomException
+     */
+    private static function generateAccountSignatoryDirectoryUrl(int $id, string $name, string $businessName, string $type, string $companyTypeId): ?string
+    {
+        $params = [
+            'id'    => EncryptionHelper::secureTestString($id),
+            'na'    => EncryptionHelper::secureTestString($name),
+            'buNa'  => EncryptionHelper::secureTestString($businessName),
+            'cmTy' => EncryptionHelper::secureTestString($companyTypeId),
+        ];
+        $baseUrl = $type === 'signatory'
+            ? 'http://localhost:3000/verification/signatory-verification?'
+            : 'http://localhost:3000/verification/directory-verification?';
+        return $baseUrl . http_build_query($params);
     }
 
 }

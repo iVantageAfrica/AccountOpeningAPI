@@ -8,4 +8,8 @@ Route::controller(AccountController::class)->group(function () {
     Route::post('create-corporate-account', 'createCorporateAccount');
 
     Route::post('add-bank-account-reference', 'submitBankAccountReference');
+    Route::post('update-bank-account-reference', 'updateBankAccountReference');
+
+    Route::post('submit-corporate-account-document', 'submitCorporateAccountCompanyDocument');
+    Route::post('update-directory-signatory-information', 'updateDirectorySignatoryInformation');
 });
