@@ -25,6 +25,9 @@ class AccountNotificationJob implements ShouldQueue
         public readonly int $accountTypeId,
         public readonly string $accountType,
         public readonly ?string $bankAccountReferenceUrl,
+        public readonly ?string $username,
+        public readonly ?string $password,
+        public readonly ?string $pin,
     ) {
     }
 
@@ -39,6 +42,9 @@ class AccountNotificationJob implements ShouldQueue
             'accountTypeId' => $this->accountTypeId,
             'accountType' => $this->accountType,
             'accountReferenceUrl' => $this->bankAccountReferenceUrl,
+            'username' => $this->username,
+            'password' => $this->password,
+            'pin' => $this->pin,
         ]);
     }
 }

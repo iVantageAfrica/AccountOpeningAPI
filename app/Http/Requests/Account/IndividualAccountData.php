@@ -50,6 +50,7 @@ class IndividualAccountData extends BaseRequest
             'city' => ['required', 'string'],
             'state' => ['required', 'string'],
             'origin' => ['nullable', 'string'],
+            'lga' => ['nullable', 'string'],
             'next_of_kin_name' => ['required', 'string'],
             'next_of_kin_address' => ['required', 'string'],
             'next_of_kin_phone_number' => ['required', 'string'],

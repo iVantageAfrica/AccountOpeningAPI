@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $employer_address
  * @property string|null $marital_status
  * @property string|null $origin
+ * @property string|null $lga
  * @property string|null $address
  * @property string|null $next_of_kin_name
  * @property string|null $next_of_kin_address
@@ -56,6 +57,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereMaritalStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereOrigin($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereLga($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereMotherMaidenName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereNextOfKinAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereNextOfKinName($value)
@@ -79,7 +81,7 @@ class IndividualAccount extends Model
     use SoftDeletes;
     protected $fillable = [
         'user_id', 'account_type_id','account_number','mother_maiden_name','phone_number','employment_status','employer_address', 'employer',
-        'title', 'marital_status', 'address', 'next_of_kin_name','next_of_kin_address','next_of_kin_relationship','origin',
+        'title', 'marital_status', 'address', 'next_of_kin_name','next_of_kin_address','next_of_kin_relationship','origin','lga',
         'next_of_kin_phone_number', 'document_id', 'referees','debit_card','status','referrer', 'occupation',
     ];
 

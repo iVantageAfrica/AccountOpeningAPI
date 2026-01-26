@@ -46,6 +46,8 @@ class IndividualAccountResource extends JsonResource
 
         return array_merge($basic, [
             'mobilePhoneNumber' => $this->phone_number ?? null,
+            'lga' => $this->lga ?? null,
+            'origin' => $this->origin ?? null,
             'employmentStatus' => $this->employment_status ?? null,
             'employerAddress' => $this->employer_address ?? null,
             'employer' => $this->employer ?? null,

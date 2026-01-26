@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -26,11 +27,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read IndividualAccount|null $currentAccount
+ * @property-read IndividualAccount|null $savingsAccount
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User lastMonth()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User lastWeek()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User thisMonth()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User thisWeek()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User today()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereBvn($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
@@ -47,6 +55,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User yesterday()
  * @mixin Eloquent
  */
 class User extends Model
@@ -71,5 +80,12 @@ class User extends Model
     public function currentAccount(): HasOne
     {
         return $this->hasOne(IndividualAccount::class)->where('account_type_id', 1);
+    }
+
+    public function getUsernameAttribute(): string
+    {
+        return Str::lower(
+            Str::slug($this->firstname . ' ' . $this->lastname, '.')
+        );
     }
 }

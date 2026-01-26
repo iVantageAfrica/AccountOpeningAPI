@@ -61,6 +61,16 @@ class AccountService
         $userData['account_type'] = $accountType->code;
         $accountNumber = ImperialMortgage::createIndividualAccount($userData);
 
+        //Create and assigned user to mobile banking
+        $userData['username'] = $userData['firstname'] . '.' . $userData['lastname'];
+        $userData['password'] = ucfirst(generateRandomAlphanumeric(6).'@'.generateRandomNumber(3));
+        $userData['pin'] = generateRandomNumber(4);
+        $isMobileRegistered = ImperialMortgage::registerMobileUser($userData);
+
+        $password = $isMobileRegistered ? $userData['password'] : '';
+        $username = $isMobileRegistered ? $userData['username'] : '';
+        $pin = $isMobileRegistered ? $userData['pin'] : '';
+
         //Save Account Data
         DB::transaction(static function () use ($userData, $accountNumber, $data) {
             //Upload Documents
@@ -85,7 +95,7 @@ class AccountService
         });
 
         $bankAccountReferenceUrl = self::generateAccountReferenceUrl($accountNumber, $data['account_type_id'], $userData['firstname'].' '.$userData['lastname']);
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $bankAccountReferenceUrl);
+        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $bankAccountReferenceUrl, $username, $password, $pin);
         return $accountNumber;
     }
 

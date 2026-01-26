@@ -5,6 +5,7 @@ namespace App\Services\ThirdParty;
 use App\Exceptions\CustomException;
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ImperialMortgage
 {
@@ -121,15 +122,62 @@ class ImperialMortgage
 
             $responseData = $response->json();
             if (($responseData['status'] ?? null) !== 'success') {
+                Log::info('Imperial Account Opening fail: '. $responseData);
                 throw new CustomException('Account cannot be create at the moment, Try again later.');
             }
             $accountNumber = $responseData['data']['accountNo'] ?? '';
             if (!$accountNumber) {
+                Log::info('Imperial Account Opening fail: '. $responseData);
                 throw new CustomException('Account creation is unavailable, Kindly try again.');
             }
             return $accountNumber;
         } catch (Exception $e) {
             throw new CustomException('An error occurred while creating account: ' . $e->getMessage());
+        }
+    }
+
+
+    public static function registerMobileUser(array $data): bool
+    {
+        return true;
+        $payload = [
+            'username'      => $data['username'],
+            'firstname'     => $data['firstname'],
+            'surname'       => $data['lastname'],
+            'middlename'    => $data['middle_name'] ?? null,
+            'email'         => $data['email'],
+            'phone'         => $data['phone_number'],
+            'password'      => $data['password'],
+            'pin'           => $data['pin'],
+            'referralCode'  => 'REF2026',
+        ];
+
+        Log::info('Payload', $payload);
+
+        try {
+            $response = Http::withHeaders([
+                'Accept'       => 'application/json',
+                'Content-Type' => 'application/json',
+            ])->post('https://api-gateway.imperialmortgagebank.com/mobile/client/register', $payload);
+
+            if (!$response->successful()) {
+                Log::error('Imperial Mobile Registration HTTP failed', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+                return false;
+            }
+
+            $responseData = $response->json();
+            if (($responseData['success'] ?? false) !== true) {
+                Log::warning('Imperial Mobile Registration API failed', ['response' => $responseData,]);
+                return false;
+            }
+            return true;
+
+        } catch (\Throwable $e) {
+            Log::error('Imperial Mobile Registration Exception', ['error' => $e->getMessage(),]);
+            return false;
         }
     }
 }
