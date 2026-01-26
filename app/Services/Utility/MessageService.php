@@ -39,8 +39,10 @@ class MessageService
     {
         $userData = User::whereBvn($data['bvn'])->firstOrFail();
         $data['firstname'] = $userData->firstname;
+        $data['customerName'] = $userData->firstname.' '.$userData->lastname;
         $data['email'] = $userData->email;
-        self::mailMessage($userData->email, 'Account Creation Successful', 'emails.accountCreation', $data);
+        $emailView = $data['accountTypeId'] === 2 ? 'emails.savingsAccountCreation' : 'emails.CurrentAccountCreation';
+        self::mailMessage($userData->email, 'Your Imperial Homes Mortgage Bank Account Has Been Successfully Opened', 'emails.accountCreation', $data);
     }
 
     public static function accountReferenceMessage(array $data): void
