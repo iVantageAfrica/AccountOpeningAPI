@@ -23,12 +23,12 @@ class CompanyDocumentData extends BaseRequest
     public function rules(): array
     {
         return [
-            'account_number' => ['string', 'required'],
+            'account_number' => ['string', 'required', 'max:15'],
             'referee' => ['array', 'required'],
-            'referee.*.name' => ['required','string'],
-            'referee.*.email_address' => ['required', 'string'],
-            'referee.*.mobile_number' => ['required', 'string'],
-            'referee.*.phone_number' => ['nullable', 'string'],
+            'referee.*.name' => ['required','string', 'max:100'],
+            'referee.*.email_address' => ['required', 'email', 'max:150'],
+            'referee.*.mobile_number' => ['required', 'string', 'max:30'],
+            'referee.*.phone_number' => ['nullable', 'string','max:30'],
             'cac' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],
             'memart' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],
             'cac_co2' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],

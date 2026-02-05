@@ -204,8 +204,10 @@ class AccountService
         foreach ($data['referee'] as $index => $referee) {
             $mailData = [
                 'name' => $referee['name'],
-                'account_name' => $data['account_name'],
                 'email' => $referee['email_address'],
+                'account_name' => $data['account_name'],
+                'account_type' => AccountType::whereId($data['account_type_id'])->first()->name,
+                'account_type_id' => $data['account_type_id'],
                 'url' => self::generateAccountReferenceSubmissionUrl($data['account_number'], $data['account_type_id'], $data['account_name'], $refereeId[$index]),
             ];
             AccountReferenceJob::dispatch($mailData);

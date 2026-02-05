@@ -23,14 +23,13 @@ class BankAccountReferenceData extends BaseRequest
     public function rules(): array
     {
         return [
-            'account_type_id' => ['numeric', 'required'],
-            'account_number' => ['string', 'required'],
-            'account_name' => ['string', 'required'],
+            'account_number' => ['string', 'required', 'digits_between:1,7'],
+            'account_name' => ['string', 'required', 'max:100'],
             'referee' => ['array', 'required'],
-            'referee.*.name' => ['required','string'],
-            'referee.*.email_address' => ['required', 'string'],
-            'referee.*.mobile_number' => ['required', 'string'],
-            'referee.*.phone_number' => ['nullable', 'string'],
+            'referee.*.name' => ['required','string', 'max:100'],
+            'referee.*.email_address' => ['required', 'email', 'max:150'],
+            'referee.*.mobile_number' => ['required', 'string', 'max:30'],
+            'referee.*.phone_number' => ['nullable', 'string', 'max:30'],
         ];
     }
 }

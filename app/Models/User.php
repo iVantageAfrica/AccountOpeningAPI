@@ -25,6 +25,8 @@ use Illuminate\Support\Str;
  * @property string|null $gender
  * @property string|null $date_of_birth
  * @property Carbon|null $deleted_at
+ * @property bool $status
+ * @property-read string $username
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read IndividualAccount|null $currentAccount
@@ -56,6 +58,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User yesterday()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereStatus($value)
  * @mixin Eloquent
  */
 class User extends Model
@@ -64,7 +67,11 @@ class User extends Model
     use SoftDeletes;
     use DateScope;
     protected $fillable = [
-        'bvn', 'nin','firstname', 'lastname', 'middle_name','email','phone_number','address','gender','date_of_birth',
+        'bvn', 'nin','firstname', 'lastname', 'middle_name','email','phone_number','address','gender','date_of_birth', 'status',
+    ];
+
+    protected $casts = [
+        'status' => 'boolean',
     ];
 
     public function accountData(): array

@@ -20,6 +20,9 @@ class AccountReferenceJob implements ShouldQueue
     protected string $accountName;
     protected string $bankAccountReferenceUrl;
 
+    protected string $accountType;
+    protected int $accountTypeId;
+
     /**
      * Create a new job instance.
      */
@@ -29,6 +32,8 @@ class AccountReferenceJob implements ShouldQueue
         $this->accountName = $data['account_name'];
         $this->bankAccountReferenceUrl = $data['url'];
         $this->refereeEmail = $data['email'];
+        $this->accountType = $data['account_type'];
+        $this->accountTypeId = $data['account_type_id'];
     }
 
     /**
@@ -40,6 +45,8 @@ class AccountReferenceJob implements ShouldQueue
             'refereeName' => $this->refereeName,
             'accountName' => $this->accountName,
             'email' => $this->refereeEmail,
+            'accountType' => $this->accountType,
+            'accountTypeId' => $this->accountTypeId,
             'accountReferenceUrl' => $this->bankAccountReferenceUrl,
         ]);
     }

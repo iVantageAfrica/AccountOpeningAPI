@@ -21,6 +21,9 @@ class VerificationService
      */
     public static function verifyBvn(string $bvn): array
     {
+        if (!preg_match('/^\d{11}$/', $bvn)) {
+            throw new CustomException('BVN must be exactly 11 digits.', 400);
+        }
         $result = self::bvnVerification($bvn);
 
         //Generate OTP for BVN verification

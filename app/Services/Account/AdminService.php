@@ -43,17 +43,19 @@ class AdminService
 
     public static function customerList(): Builder
     {
-        return User::with(['savingsAccount', 'currentAccount'])
+        return User::whereStatus(true)
+            ->with(['savingsAccount', 'currentAccount'])
             ->orderByDesc('id');
     }
 
     public static function customerSummary(): array
     {
-        return  [
-            'totalCustomers' => User::count(),
-            'weeklyCustomers' => User::thisWeek()->count(),
-            'monthlyCustomers' => User::thisMonth()->count(),
-            'lastMonth' => User::lastMonth()->count(),
+        $query = User::whereStatus(true);
+        return [
+            'totalCustomers'   => (clone $query)->count(),
+            'weeklyCustomers'  => (clone $query)->thisWeek()->count(),
+            'monthlyCustomers' => (clone $query)->thisMonth()->count(),
+            'lastMonth'        => (clone $query)->lastMonth()->count(),
         ];
     }
 

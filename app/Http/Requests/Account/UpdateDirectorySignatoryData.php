@@ -31,7 +31,7 @@ class UpdateDirectorySignatoryData extends BaseRequest
     {
         return [
             'type' => ['required', 'string', Rule::in('signatory', 'directory')],
-            'directorySignatoryId' => ['required', 'string'],
+            'directorySignatoryId' => ['required', 'string', 'max:10'],
             'valid_id' => ['nullable', 'file', 'mimes:jpg,jpeg,png,doc,docx,pdf', 'max:3048'],
             'signature' => ['nullable', 'file', 'mimes:jpg,jpeg,png,doc,docx,pdf', 'max:3048'],
             'passport' => ['nullable', 'file', 'mimes:jpg,jpeg,png,doc,docx,pdf', 'max:3048'],

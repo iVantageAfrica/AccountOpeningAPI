@@ -26,10 +26,10 @@ class UpdateBankAccountReferenceData extends BaseRequest
     {
         return [
             'referee_id' => ['integer', 'required', Rule::exists(Referee::class, 'id')],
-            'account_name' => ['string', 'required'],
-            'account_type' => ['string', 'required'],
-            'account_number' => ['string', 'required'],
-            'bank_name' => ['string', 'required'],
+            'account_name' => ['string', 'required', 'max:50'],
+            'account_type' => ['string', 'required', 'max:50'],
+            'account_number' => ['string', 'required', 'max:50'],
+            'bank_name' => ['string', 'required', 'max:50'],
             'signature' => ['required', 'file', 'mimes:jpeg,png,jpg,gif,svg,pdf', 'max:2048'],
         ];
     }

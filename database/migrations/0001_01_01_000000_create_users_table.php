@@ -22,6 +22,7 @@ return new class () extends Migration {
             $table->string('address')->nullable();
             $table->string('gender')->nullable();
             $table->string('date_of_birth')->nullable();
+            $table->boolean('status')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });
