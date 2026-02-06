@@ -21,16 +21,18 @@ class OTPJobs implements ShouldQueue
     protected string $purpose;
     protected string $code;
     protected ?string $reference;
+    protected ?string $phoneNumber;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $code, string $email, string $purpose, ?string $reference = null)
+    public function __construct(string $code, string $email, string $purpose, ?string $reference = null, ?string $phoneNumber = null)
     {
         $this->code = $code;
         $this->email = $email;
         $this->purpose = $purpose;
         $this->reference = $reference;
+        $this->phoneNumber = $phoneNumber;
     }
 
     /**
@@ -46,10 +48,10 @@ class OTPJobs implements ShouldQueue
             ->orderByDesc('created_at')
             ->first();
 
-        if ($existingOtp && $existingOtp->created_at->diffInMinutes(now()) < 3) {
+        if ($existingOtp && $existingOtp->created_at->diffInMinutes(now()) < 2) {
             return;
         }
 
-        MessageService::createOTPCode($this->code, $this->email, $this->purpose, $this->reference);
+        MessageService::createOTPCode($this->code, $this->email, $this->purpose, $this->reference, $this->phoneNumber);
     }
 }

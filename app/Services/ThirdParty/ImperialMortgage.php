@@ -6,6 +6,8 @@ use App\Exceptions\CustomException;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use SimpleXMLElement;
+use Throwable;
 
 class ImperialMortgage
 {
@@ -175,8 +177,46 @@ class ImperialMortgage
             }
             return true;
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Imperial Mobile Registration Exception', ['error' => $e->getMessage(),]);
+            return false;
+        }
+    }
+
+    public static function sendSmsToUser(string $phoneNumber, string $message): bool
+    {
+        $phoneNumber = strlen($phoneNumber) === 11 && str_starts_with($phoneNumber, '0')
+            ? '234' . substr($phoneNumber, 1)
+            : $phoneNumber;
+
+        $textHex = bin2hex($message);
+        $configUsername = config('services.vanso.username');
+        $configPassword = config('services.vanso.password');
+        $url = config('services.vanso.url');
+
+
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<operation type="submit">
+    <account username="{$configUsername}" password="{$configPassword}" />
+    <submitRequest>
+        <deliveryReport>true</deliveryReport>
+        <sourceAddress type="alphanumeric">ImperialMBL</sourceAddress>
+        <destinationAddress type="international">{$phoneNumber}</destinationAddress>
+        <text encoding="ISO-8859-1">{$textHex}</text>
+    </submitRequest>
+</operation>
+XML;
+
+        try {
+            $response = Http::withHeaders(['Content-Type' => 'text/xml'])
+                ->withBody($xml, 'text/xml')
+                ->post($url)
+                ->body();
+            $xmlResponse = new SimpleXMLElement($response);
+            $submitResponse = $xmlResponse->submitResponse[0] ?? null;
+            return isset($submitResponse->error['code']) && (string)$submitResponse?->error['code'] === '0';
+        } catch (Throwable $e) {
             return false;
         }
     }

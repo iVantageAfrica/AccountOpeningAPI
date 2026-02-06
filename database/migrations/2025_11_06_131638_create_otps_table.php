@@ -14,6 +14,7 @@ return new class () extends Migration {
             $table->id();
             $table->string('code');
             $table->string('email_address');
+            $table->string('phone_number')->nullable();
             $table->string('reference')->nullable();
             $table->string('purpose')->nullable();
             $table->boolean('status')->default(true);

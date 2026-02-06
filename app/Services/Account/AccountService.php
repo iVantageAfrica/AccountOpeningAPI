@@ -53,7 +53,8 @@ class AccountService
     public static function createIndividualAccount(array $data): string
     {
         //Get user account data from user using the BVN and Check if user has such account
-        $userData = User::whereBvn($data['bvn'])->firstOrFail()->toArray();
+        $userModel = User::whereBvn($data['bvn'])->firstOrFail();
+        $userData = $userModel->toArray();
         self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'INDIVIDUAL');
 
         //Create user individual account
@@ -96,6 +97,7 @@ class AccountService
 
         $bankAccountReferenceUrl = self::generateAccountReferenceUrl($accountNumber, $data['account_type_id'], $userData['firstname'].' '.$userData['lastname']);
         AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $bankAccountReferenceUrl, $username, $password, $pin);
+        $userModel->update(['status' => true]);
         return $accountNumber;
     }
 
@@ -142,7 +144,8 @@ class AccountService
     public static function corporateAccount(array $data): string
     {
         //Get user account data from user using the BVN and Check if user has such account
-        $userData = User::whereBvn($data['bvn'])->firstOrFail()->toArray();
+        $userModel = User::whereBvn($data['bvn'])->firstOrFail();
+        $userData = $userModel->toArray();
         self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'CORPORATE');
 
         //Create user corporate account
@@ -183,6 +186,7 @@ class AccountService
         //Generate Signatory and Directory Verification Links and send mails
         self::dispatchSignatoryDirectoryJobs($data['director'] ?? [], $directorsId, $data['company_name'], 'directory', $data['company_type_id']);
         self::dispatchSignatoryDirectoryJobs($data['signatory'] ?? [], $signatoryIds, $data['company_name'], 'signatory', $data['company_type_id']);
+        $userModel->update(['status' => true]);
         return $accountNumber;
     }
 

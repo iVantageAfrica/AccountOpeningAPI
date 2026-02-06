@@ -51,5 +51,10 @@ return [
         'clientId' => env('BLUSALT_CLIENT_ID'),
         'appName' => env('BLUSALT_APP_NAME'),
     ],
+    'vanso' => [
+        'username' => env('VANSO_USERNAME'),
+        'password' => env('VANSO_PASSWORD'),
+        'url'      => env('VANSO_URL'),
+    ],
 
 ];

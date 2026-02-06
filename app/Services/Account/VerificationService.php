@@ -28,7 +28,7 @@ class VerificationService
 
         //Generate OTP for BVN verification
         $code = generateRandomNumber(6);
-        dispatch(new OTPJobs($code, $result['UserEmail'], OtpPurpose::BVN_VALIDATION->value, $bvn));
+        dispatch(new OTPJobs($code, $result['UserEmail'], OtpPurpose::BVN_VALIDATION->value, $bvn, $result['UserPhoneNo']));
         return ['emailAddress' => $result['UserEmail'],
                 'phoneNumber' => $result['UserPhoneNo'],
                 'authToken' => EncryptionHelper::secureString(['reference' => $result['UserEmail'], 'code' => $code])];

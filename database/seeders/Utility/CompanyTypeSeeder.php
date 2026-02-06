@@ -18,12 +18,12 @@ class CompanyTypeSeeder extends Seeder
             ['name' => 'Public Limited Company (PLC)'],
             ['name' => 'Incorporated Trustee'],
             ['name' => 'Company Limited by Guarantee (CLG)'],
-            ['name' => 'Limited Liability Partnership'],
+            ['name' => 'Limited Liability Partnership (LLP)'],
             ['name' => 'Limited Liability Company (LTD)'],
-            ['name' => 'Business Name/Sole Proprietorship'],
+            ['name' => 'Business Name / Sole Proprietorship'],
             ['name' => 'Clubs, Societies & Associations'],
-            ['name' => 'NGOs / Foundation/ Trusts'],
-            ['name' => 'Foreign-Owned/ Foreign-Controlled Entities (Additions)'],
+            ['name' => 'NGOs / Foundation / Trusts'],
+            ['name' => 'Foreign-Owned / Foreign-Controlled Entities'],
             ['name' => 'Franchise'],
         ]);
     }

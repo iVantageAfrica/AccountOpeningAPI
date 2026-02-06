@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $purpose
  * @property string $reference
  * @property string $email_address
+ * @property string|null $phone_number
  * @property bool $status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Otp whereReference($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Otp wherePurpose($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Otp whereEmailAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Otp wherePhoneNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Otp whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Otp whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Otp whereStatus($value)
@@ -35,7 +37,7 @@ class Otp extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'code', 'status', 'expires_at','purpose','email_address','reference',
+        'code', 'status', 'expires_at','purpose','email_address','reference','phone_number',
     ];
 
     protected $casts = [

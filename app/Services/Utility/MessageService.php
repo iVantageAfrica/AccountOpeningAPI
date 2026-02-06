@@ -6,6 +6,7 @@ use App\Enum\OtpPurpose;
 use App\Helpers\EncryptionHelper;
 use App\Models\User;
 use App\Models\Utility\Otp;
+use App\Services\ThirdParty\ImperialMortgage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Random\RandomException;
@@ -15,23 +16,34 @@ class MessageService
     /**
      * @throws RandomException
      */
-    public static function createOTPCode(string $code, string $emailAddress, string $purpose, string $reference = null): void
+    public static function createOTPCode(string $code, string $emailAddress, string $purpose, string $reference = null, string $phoneNumber = null): void
     {
         Otp::create(
             [
                 'email_address' => strtolower($emailAddress),
                 'purpose' => $purpose,
+                'phone_number' => $phoneNumber,
                 'code' => $code,
                 'reference' => EncryptionHelper::secureString($reference),
                 'expires_at' => Carbon::now()->addMinutes(5),
             ]
         );
+        $message = match ($purpose) {
+            OtpPurpose::BVN_VALIDATION->value => "Your OTP code for BVN verification is: {$code}. This code is valid for 5 minutes. Do not share it with anyone.",
+            OtpPurpose::RESET_PASSWORD->value => "You requested to reset your password. Your OTP code is: {$code}. This code is valid for 5 minutes. Do not share it with anyone.",
+            default => "Your OTP code is: {$code}. This code is valid for 10 minutes. Do not share it with anyone.",
+        };
 
-        if ($purpose === OtpPurpose::BVN_VALIDATION->value) {
-            self::mailMessage($emailAddress, $purpose, 'emails.bvnValidation', ['otpCode' => $code]);
+        if ($phoneNumber) {
+            ImperialMortgage::sendSmsToUser($phoneNumber, $message);
         }
-        if ($purpose === OtpPurpose::RESET_PASSWORD->value) {
-            self::mailMessage($emailAddress, $purpose, 'emails.resetPassword', ['otpCode' => $code]);
+
+        $emailTemplates = [
+            OtpPurpose::BVN_VALIDATION->value => 'emails.bvnValidation',
+            OtpPurpose::RESET_PASSWORD->value => 'emails.resetPassword',
+        ];
+        if (isset($emailTemplates[$purpose])) {
+            self::mailMessage($emailAddress, $purpose, $emailTemplates[$purpose], ['otpCode' => $code]);
         }
     }
 
@@ -47,7 +59,7 @@ class MessageService
 
     public static function accountReferenceMessage(array $data): void
     {
-        self::mailMessage($data['email'], 'Request for Account Reference Confirmation', 'emails.accountReference', $data);
+        self::mailMessage($data['email'], 'Request to Provide Account Reference – Imperial Homes Mortgage Bank', 'emails.accountReference', $data);
     }
 
     public static function accountSignatoryDirectoryMessage(array $data): void
@@ -68,4 +80,5 @@ class MessageService
             }
         );
     }
+
 }
