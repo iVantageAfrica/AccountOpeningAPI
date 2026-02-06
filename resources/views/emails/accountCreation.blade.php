@@ -25,7 +25,7 @@
                 You can submit your bank references by clicking the link below:
             </p>
             <a href="{{ $accountReferenceUrl }}" style="color:#DE4F01">
-                {{ Str::limit($accountReferenceUrl, 20) }}
+                {{ Str::limit($accountReferenceUrl, 90) }}
             </a>
             <br><br>
         @endif
@@ -36,7 +36,7 @@
                 Kindly click the link below to complete your setup:
             </p>
             <a href="{{ $accountReferenceUrl }}" style="color:#DE4F01">
-                {{ Str::limit($accountReferenceUrl, 20) }}
+                {{ Str::limit($accountReferenceUrl, 90) }}
             </a>
             <br><br>
         @endif

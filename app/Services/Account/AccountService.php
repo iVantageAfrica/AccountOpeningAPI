@@ -181,7 +181,8 @@ class AccountService
                 'ty' => EncryptionHelper::secureTestString($data['company_type_id']),
                 'bsNa' => EncryptionHelper::secureTestString($data['company_name']),
             ]);
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $companyDocumentUrl);
+        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $companyDocumentUrl, null, null, null);
+
 
         //Generate Signatory and Directory Verification Links and send mails
         self::dispatchSignatoryDirectoryJobs($data['director'] ?? [], $directorsId, $data['company_name'], 'directory', $data['company_type_id']);

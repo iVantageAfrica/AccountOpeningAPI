@@ -48,7 +48,7 @@
         <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">
             <b>Click the link below to complete the reference form:</b> <br>
             <a href="{{ $accountReferenceUrl }}" style="color:#DE4F01">
-                {{ Str::limit($accountReferenceUrl, 20) }}
+                {{ Str::limit($accountReferenceUrl, 90) }}
             </a>
             <br>
             Please note that this link is <b>secure and unique </b>to you.
