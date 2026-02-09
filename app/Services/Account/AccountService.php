@@ -175,7 +175,8 @@ class AccountService
         });
 
         //Send User Notification
-        $companyDocumentUrl = 'http://localhost:3000/verification/company-document?' .
+        $frontEndUrl = config('app.app_frontend_url');
+        $companyDocumentUrl = $frontEndUrl.'/verification/company-document?' .
             http_build_query([
                 'acc' => EncryptionHelper::secureTestString($accountNumber),
                 'ty' => EncryptionHelper::secureTestString($data['company_type_id']),
@@ -189,6 +190,21 @@ class AccountService
         self::dispatchSignatoryDirectoryJobs($data['signatory'] ?? [], $signatoryIds, $data['company_name'], 'signatory', $data['company_type_id']);
         $userModel->update(['status' => true]);
         return $accountNumber;
+    }
+
+    public static function createBankAccountReference(array $data): bool
+    {
+        $accountData = IndividualAccount::whereAccountNumber($data['user_account_number'])->first()
+            ?? CorporateAccount::whereAccountNumber($data['user_account_number'])->first();
+        if (!$accountData) {
+            return false;
+        }
+        $data['signature'] = isset($data['signature']) && $data['signature'] instanceof UploadedFile ? FileUploadHelper::uploadFile($data['signature']) : null;
+        $refereeId = Referee::create($data)->id;
+        $accountData->update([
+            'referees' => array_merge($accountData->referees ?? [], [$refereeId]),
+        ]);
+        return true;
     }
 
 
@@ -329,7 +345,8 @@ class AccountService
             'ty'    => EncryptionHelper::secureTestString($accountTypeId),
             'acNa'  => EncryptionHelper::secureTestString($accountName),
         ];
-        return 'http://localhost:3000/verification/account-reference?' . http_build_query($params);
+        $frontEndUrl = config('app.app_frontend_url');
+        return $frontEndUrl.'/verification/account-reference?' . http_build_query($params);
     }
 
     /**
@@ -343,7 +360,8 @@ class AccountService
             'acNa'  => EncryptionHelper::secureTestString($accountName),
             'refId' => EncryptionHelper::secureTestString($refereeId),
         ];
-        return 'http://localhost:3000/verification/reference-submission?' . http_build_query($params);
+        $frontEndUrl = config('app.app_frontend_url');
+        return $frontEndUrl.'/verification/reference-submission?' . http_build_query($params);
     }
 
     /**
@@ -369,6 +387,7 @@ class AccountService
      */
     private static function generateAccountSignatoryDirectoryUrl(int $id, string $name, string $businessName, string $type, string $companyTypeId): ?string
     {
+        $frontEndUrl = config('app.app_frontend_url');
         $params = [
             'id'    => EncryptionHelper::secureTestString($id),
             'na'    => EncryptionHelper::secureTestString($name),
@@ -376,8 +395,8 @@ class AccountService
             'cmTy' => EncryptionHelper::secureTestString($companyTypeId),
         ];
         $baseUrl = $type === 'signatory'
-            ? 'http://localhost:3000/verification/signatory-verification?'
-            : 'http://localhost:3000/verification/directory-verification?';
+            ? $frontEndUrl.'/verification/signatory-verification?'
+            : $frontEndUrl.'/verification/directory-verification?';
         return $baseUrl . http_build_query($params);
     }
 

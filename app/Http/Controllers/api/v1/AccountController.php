@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Account\AccountReferenceSubmissionData;
 use App\Http\Requests\Account\BankAccountReferenceData;
 use App\Http\Requests\Account\CompanyDocumentData;
 use App\Http\Requests\Account\CorporateAccountData;
@@ -68,6 +69,13 @@ class AccountController extends Controller
         $data = $request->validated();
         AccountService::updateBankAccountReference($data);
         return $this->successResponse(message: 'Bank account reference updated successfully.');
+    }
+
+    public function createBankAccountReference(AccountReferenceSubmissionData $request): JsonResponse
+    {
+        $data = $request->validated();
+        AccountService::createBankAccountReference($data);
+        return $this->successResponse(message: 'Bank account reference submitted successfully.');
     }
 
     /**

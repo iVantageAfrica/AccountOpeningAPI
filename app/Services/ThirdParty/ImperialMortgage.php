@@ -185,9 +185,7 @@ class ImperialMortgage
 
     public static function sendSmsToUser(string $phoneNumber, string $message): bool
     {
-        $phoneNumber = strlen($phoneNumber) === 11 && str_starts_with($phoneNumber, '0')
-            ? '234' . substr($phoneNumber, 1)
-            : $phoneNumber;
+        $phoneNumber = '234' . substr(preg_replace('/\D/', '', $phoneNumber), -10);
 
         $textHex = bin2hex($message);
         $configUsername = config('services.vanso.username');
