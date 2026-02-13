@@ -19,6 +19,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $signature
  * @property string|null $passport
  * @property string|null $valid_id
+ * @property bool $is_submitted
+ * @property Carbon|null $submitted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory newModelQuery()
@@ -29,12 +31,14 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereEmailAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereFirstname($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereIsSubmitted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereLastname($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereNin($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereOthername($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory wherePassport($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory wherePhoneNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereSignature($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereSubmittedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Directory whereValidId($value)
  * @mixin Eloquent
@@ -44,5 +48,11 @@ class Directory extends Model
     use HasFactory;
     protected $fillable = [
         'lastname', 'firstname', 'othername', 'email_address', 'phone_number', 'bvn', 'nin', 'signature', 'passport', 'valid_id',
+        'is_submitted', 'submitted_at',
+    ];
+
+    protected $casts = [
+        'is_submitted' => 'boolean',
+        'submitted_at' => 'datetime',
     ];
 }

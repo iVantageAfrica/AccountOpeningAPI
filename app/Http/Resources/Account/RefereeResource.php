@@ -23,6 +23,8 @@ class RefereeResource extends JsonResource
             'accountName' => $this->account_name ?? null,
             'accountNumber' => $this->account_number ?? null,
             'accountType' => $this->account_type ?? null,
+            'knownPeriod' => $this->know_period ?? null,
+            'comment' => $this->comment ?? null,
             'signature' => $this->signature ?? null,
         ];
     }

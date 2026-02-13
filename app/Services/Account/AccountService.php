@@ -63,7 +63,7 @@ class AccountService
         $accountNumber = ImperialMortgage::createIndividualAccount($userData);
 
         //Create and assigned user to mobile banking
-        $userData['username'] = $userData['firstname'] . '.' . $userData['lastname'];
+        $userData['username'] = !empty($userData['email']) ? $userData['email'] : strtolower($userData['firstname'] . '.' . $userData['lastname']);
         $userData['password'] = ucfirst(generateRandomAlphanumeric(6).'@'.generateRandomNumber(3));
         $userData['pin'] = generateRandomNumber(4);
         $isMobileRegistered = ImperialMortgage::registerMobileUser($userData);
@@ -236,14 +236,25 @@ class AccountService
         return true;
     }
 
+    /**
+     * @throws CustomException
+     */
     public static function updateBankAccountReference(array $data): bool
     {
-        return Referee::whereId($data['referee_id'])
-            ->update([
+        $refereeData = Referee::whereId($data['referee_id'])->first();
+        if (!$refereeData) {
+            throw new CustomException('Referee not found', 404);
+        }
+        if ($refereeData->is_submitted) {
+            throw new CustomException('Referee is already submitted, Link is no longer accepted', 409);
+        }
+        return $refereeData->update([
             'account_name' => $data['account_name'],
             'account_type' => $data['account_type'],
             'account_number' => $data['account_number'],
             'bank_name' => $data['bank_name'],
+            'is_submitted' => true,
+            'submitted_at' => now(),
             'signature' => isset($data['signature']) && $data['signature'] instanceof UploadedFile
                 ? FileUploadHelper::uploadFile($data['signature']) : null,
         ]);
@@ -251,10 +262,17 @@ class AccountService
 
     /**
      * @throws RandomException
+     * @throws CustomException
      */
     public static function updateCorporateAccountCompanyDocument(array $data): bool
     {
-        $accountDetails = CorporateAccount::whereAccountNumber($data['account_number'])->firstOrFail();
+        $accountDetails = CorporateAccount::whereAccountNumber($data['account_number'])->first();
+        if (!$accountDetails) {
+            throw new CustomException('Account not found', 404);
+        }
+        if ($accountDetails->companyDocument && $accountDetails->companyDocument->is_submitted) {
+            throw new CustomException('Company Document is already submitted', 409);
+        }
         $data['account_type_id'] = $accountDetails->account_type_id;
         $data['account_name'] = $accountDetails->company_name;
 
@@ -265,6 +283,8 @@ class AccountService
                 $documentPayload[$field] = FileUploadHelper::uploadFile($data[$field]);
             }
         }
+        $documentPayload['is_submitted'] = true;
+        $documentPayload['submitted_at'] = now();
         $companyDocument = CompanyDocument::create($documentPayload);
         $accountDetails->company_document_id = $companyDocument->id;
         $accountDetails->save();
@@ -273,17 +293,31 @@ class AccountService
         return true;
     }
 
+    /**
+     * @throws CustomException
+     */
     public static function updateDirectorySignatory(array $data): bool
     {
         $modelClass = $data['type'] === 'directory' ? Directory::class : Signatory::class;
-        $model = $modelClass::findOrFail($data['directorySignatoryId']);
+        $model = $modelClass::find($data['directorySignatoryId']);
+        if (!$model) {
+            throw new CustomException('Record not found.', 404);
+        }
 
+        if ($model->is_submitted) {
+            throw new CustomException('This record has already been submitted. Link is no longer accepted.', 409);
+        }
         $documentPayload = [];
         foreach ($model->getFillable() as $field) {
+            if (in_array($field, ['is_submitted', 'submitted_at'])) {
+                continue;
+            }
             if (isset($data[$field]) && $data[$field] instanceof UploadedFile) {
                 $documentPayload[$field] = FileUploadHelper::uploadFile($data[$field]);
             }
         }
+        $documentPayload['is_submitted'] = true;
+        $documentPayload['submitted_at'] = now();
         $model->update($documentPayload);
         return true;
     }
@@ -292,7 +326,7 @@ class AccountService
     /**
      * @throws CustomException
      */
-    private static function ensureAccountDoesNotExist(int $userId, int $accountTypeId, string $type): void
+    public static function ensureAccountDoesNotExist(int $userId, int $accountTypeId, string $type): void
     {
         $query = match (strtoupper($type)) {
             'INDIVIDUAL' => IndividualAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),

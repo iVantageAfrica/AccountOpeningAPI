@@ -27,10 +27,12 @@ class AccountReferenceSubmissionData extends FormRequest
             'name' => ['string', 'required', 'max:100'],
             'email_address' => ['string', 'required', 'email', 'max:150'],
             'mobile_number' => ['string', 'required', 'max:30'],
-            'account_name' => ['string', 'required', 'max:50'],
+            'account_name' => ['string', 'required', 'max:100'],
             'account_type' => ['string', 'required', 'max:50'],
             'account_number' => ['string', 'required', 'max:50'],
-            'bank_name' => ['string', 'required', 'max:50'],
+            'bank_name' => ['string', 'required', 'max:100'],
+            'comment' => ['string', 'nullable', 'max:1000'],
+            'know_period' => ['string', 'required', 'max:20'],
             'signature' => ['required', 'file', 'mimes:jpeg,png,jpg,gif,svg,pdf', 'max:2048'],
         ];
     }

@@ -28,13 +28,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $nipc_certificate
  * @property string|null $business_permit
  * @property string|null $due_diligence
+ * @property bool $is_submitted
+ * @property Carbon|null $submitted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereBoardResolution($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument wherePartnershipResolution($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereBusinessPermit($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereCac($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereCacCo2($value)
@@ -44,13 +45,16 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereDeclarationForm($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereDueDiligence($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereIsSubmitted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereMemart($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereNipcCertificate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument wherePartnershipDeed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument wherePartnershipResolution($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument wherePrincipalList($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereProprietorDeclaration($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereSignatoryMandate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereSocietyResolution($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereSubmittedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereTin($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereTrustDeed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDocument whereTrusteeList($value)
@@ -64,6 +68,11 @@ class CompanyDocument extends Model
     protected $fillable = [
         'cac', 'memart', 'cac_co2', 'cac_co7', 'board_resolution', 'declaration_form','partnership_resolution', 'proprietor_declaration', 'signatory_mandate', 'partnership_deed',
         'tin', 'society_resolution', 'principal_list', 'constitution', 'trustee_list', 'trust_deed', 'trustee_resolution', 'nipc_certificate',
-        'business_permit', 'due_diligence',
+        'business_permit', 'due_diligence', 'is_submitted', 'submitted_at',
+    ];
+
+    protected $casts = [
+        'is_submitted' => 'boolean',
+        'submitted_at' => 'datetime',
     ];
 }

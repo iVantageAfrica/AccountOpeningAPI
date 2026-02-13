@@ -22,6 +22,8 @@ return new class () extends Migration {
             $table->longText('signature')->nullable();
             $table->longText('passport')->nullable();
             $table->longText('valid_id')->nullable();
+            $table->boolean('is_submitted')->default(false);
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }

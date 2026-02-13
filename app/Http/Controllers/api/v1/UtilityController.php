@@ -36,8 +36,8 @@ class UtilityController extends Controller
      */
     public function verifyBvn(Request $request): JsonResponse
     {
-        ['bvn' => $bvn] = QueryParamValidator::getRequiredParams($request, ['bvn']);
-        return $this->successDataResponse(data:VerificationService::verifyBvn($bvn));
+        ['bvn' => $bvn, 'accountTypeId' => $accountTypeId] = QueryParamValidator::getRequiredParams($request, ['bvn', 'accountTypeId']);
+        return $this->successDataResponse(data:VerificationService::verifyBvn($bvn, $accountTypeId));
     }
 
     /**

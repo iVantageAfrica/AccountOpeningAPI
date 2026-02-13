@@ -20,10 +20,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $specimen_signature
  * @property string|null $partnership_deed
  * @property string|null $mode_of_operation
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
  * @property string|null $joint_mandate
  * @property string|null $board_approve
+ * @property bool $is_submitted
+ * @property Carbon|null $submitted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory query()
@@ -32,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereEmailAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereIsSubmitted($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereJointMandate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereModeOfOperation($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereName($value)
@@ -42,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereProofOfAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereSignature($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereSpecimenSignature($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereSubmittedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Signatory whereUpdatedAt($value)
  * @mixin Eloquent
  */
@@ -50,6 +54,11 @@ class Signatory extends Model
     use HasFactory;
     protected $fillable = [
         'name', 'email_address', 'phone_number', 'bvn', 'nin', 'signature', 'passport', 'proof_of_address', 'specimen_signature',
-        'partnership_deed', 'mode_of_operation', 'joint_mandate','board_approve',
+        'partnership_deed', 'mode_of_operation', 'joint_mandate','board_approve', 'is_submitted', 'submitted_at',
+    ];
+
+    protected $casts = [
+        'is_submitted' => 'boolean',
+        'submitted_at' => 'datetime',
     ];
 }

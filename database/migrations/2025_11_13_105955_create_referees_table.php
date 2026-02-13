@@ -10,7 +10,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('referees', function (Blueprint $table) {
+        Schema::create('referees', static function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
             $table->string('email_address')->nullable();
@@ -20,7 +20,11 @@ return new class () extends Migration {
             $table->string('account_name')->nullable();
             $table->string('bank_name')->nullable();
             $table->string('account_type')->nullable();
+            $table->string('know_period')->nullable();
+            $table->longText('comment')->nullable();
             $table->longText('signature')->nullable();
+            $table->boolean('is_submitted')->default(false);
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }

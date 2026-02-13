@@ -25,6 +25,8 @@ return new class () extends Migration {
             $table->longText('mode_of_operation')->nullable();
             $table->longText('joint_mandate')->nullable();
             $table->longText('board_approve')->nullable();
+            $table->boolean('is_submitted')->default(false);
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }

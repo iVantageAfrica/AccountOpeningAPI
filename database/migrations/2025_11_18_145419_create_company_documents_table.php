@@ -32,6 +32,8 @@ return new class () extends Migration {
             $table->longText('nipc_certificate')->nullable();
             $table->longText('business_permit')->nullable();
             $table->longText('due_diligence')->nullable();
+            $table->boolean('is_submitted')->default(false);
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }

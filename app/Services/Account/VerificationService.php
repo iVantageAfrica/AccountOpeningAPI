@@ -19,12 +19,12 @@ class VerificationService
      * @throws CustomException
      * @throws RandomException
      */
-    public static function verifyBvn(string $bvn): array
+    public static function verifyBvn(string $bvn, string $accountTypeId): array
     {
         if (!preg_match('/^\d{11}$/', $bvn)) {
             throw new CustomException('BVN must be exactly 11 digits.', 400);
         }
-        $result = self::bvnVerification($bvn);
+        $result = self::bvnVerification($bvn, $accountTypeId);
 
         //Generate OTP for BVN verification
         $code = generateRandomNumber(6);
@@ -98,11 +98,17 @@ class VerificationService
     /**
      * @throws CustomException
      */
-    private static function bvnVerification(string $bvn): array
+    private static function bvnVerification(string $bvn, string $accountTypeId): array
     {
         //Manual check if user bvn already exist in the db
         $userBvnData = User::whereBvn($bvn)->first();
         if ($userBvnData) {
+            $accountType = match ($accountTypeId) {
+                '1', '2' => 'INDIVIDUAL',
+                '3' => 'CORPORATE',
+                default => 'MERCHANT',
+            };
+            AccountService::ensureAccountDoesNotExist($userBvnData->id, $accountTypeId, $accountType);
             return ['UserEmail' => $userBvnData->accountData()['email'],
                     'UserPhoneNo' => $userBvnData->accountData()['phone_number']];
         }
