@@ -339,7 +339,7 @@ class AccountService
             throw new CustomException('Invalid account type', 400);
         }
         if ($query->exists()) {
-            throw new CustomException('BVN already exists for such account', 409);
+            throw new CustomException('BVN already exists for this account Type, Kindly visit our online Banking channel for more details', 409);
         }
     }
 

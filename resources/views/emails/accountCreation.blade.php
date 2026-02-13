@@ -4,7 +4,7 @@
         <p style="line-height: 30px; font-size: 16px; margin: 0; padding: 25px 0px 5px 0px;">
             Dear <b>{{ $firstname }} </b><br>
             Welcome to the <b>Imperial Homes Mortgage Bank.</b>
-            <br />We are pleased to inform you that your {{ $accountType }} with Imperial Homes
+            <br/>We are pleased to inform you that your {{ $accountType }} with Imperial Homes
             Mortgage Bank has been successfully opened.
         </p>
 
@@ -30,9 +30,10 @@
             <br><br>
         @endif
 
-        @if(!empty($accountReferenceUrl) &&  $accountTypeId === 3 )
+        @if(!empty($accountReferenceUrl) && in_array($accountTypeId, [3, 4], true))
             <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">
-                As part of completing your account setup, <b>please provide two bank account referees and upload your company documents.</b>
+                As part of completing your account setup, <b>please provide two bank account referees and upload your
+                    company documents.</b>
                 Kindly click the link below to complete your setup:
             </p>
             <a href="{{ $accountReferenceUrl }}" style="color:#DE4F01">
@@ -58,22 +59,25 @@
             </ul>
 
             <p style="line-height: 30px; font-size: 16px; margin: 0;">
-                Please proceed to log in via our <b>Internet Banking portal or Mobile App</b> using the credentials above.
+                Please proceed to log in via our <b>Internet Banking portal or Mobile App</b> using the credentials
+                above.
                 For security reasons, <b>you will be required to create a new login password and transaction PIN</b>
                 on your first login.
             </p>
             <br><br>
         @endif
 
-        @if($accountTypeId === 3)
+        @if($accountTypeId === 3 || $accountTypeId === 4)
             <p style="line-height: 30px; font-size: 16px; margin: 0;">
                 <b>Important Notice on Digital Banking Access </b>
             </p>
             <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">Please
-                proceed to register for our Corporate Internet Banking (CIB) platform by completing
+                proceed to register for our <a
+                    href="https://corporate.imperialmortgagebank.com/?nav_source=ibs"
+                    style=" color:#DE4F01">Corporate Internet Banking (CIB)</a> platform by completing
                 our
                 On-boarding form <a
-                    href="https://corporate.imperialmortgagebank.com/?nav_source=ibs"
+                    href="https://www.imperialmortgagebank.com/assets/books/corporatebank.pdf"
                     style=" color:#DE4F01"> here</a>
 
 
@@ -94,7 +98,9 @@
 
         <ul style="margin-top:0px">
             <li style="margin-bottom: 5px;"><b>Do not share your password or transaction PIN with anyone</b></li>
-            <li style="margin-bottom: 5px;">Imperial Homes Mortgage Bank staff will <b>never request</b> your password or PIN</li>
+            <li style="margin-bottom: 5px;">Imperial Homes Mortgage Bank staff will <b>never request</b> your password
+                or PIN
+            </li>
             <li>Always ensure you log in through our official banking channels only</li>
         </ul>
 

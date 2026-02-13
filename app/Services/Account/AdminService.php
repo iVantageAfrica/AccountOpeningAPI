@@ -66,9 +66,10 @@ class AdminService
             ->orderByDesc('id');
     }
 
-    public static function corporateAccountList(): Builder
+    public static function corporateAccountList(string|int $accountTypeId): Builder
     {
-        return CorporateAccount::with(['user', 'companyType'])
+        return CorporateAccount::whereAccountTypeId($accountTypeId)
+            ->with(['user', 'companyType'])
             ->orderByDesc('id');
     }
 
@@ -90,9 +91,10 @@ class AdminService
         ];
     }
 
-    public static function corporateAccountSummary(): array
+    public static function corporateAccountSummary(string|int $accountTypeId): array
     {
-        $summary = CorporateAccount::selectRaw('
+        $summary = CorporateAccount::whereAccountTypeId($accountTypeId)
+            ->selectRaw('
             COUNT(*) AS "totalAccount",
             COUNT(CASE WHEN LOWER(status) = \'pending\' THEN 1 END) AS "pendingAccount",
             COUNT(CASE WHEN LOWER(status) = \'approved\' THEN 1 END) AS "approvedAccount",

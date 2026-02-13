@@ -67,13 +67,22 @@ class AdminController extends Controller
 
     public function listCorporateAccount(Request $request): JsonResponse
     {
-        $corporateAccount = AdminService::corporateAccountList();
+        $corporateAccount = AdminService::corporateAccountList('3');
+        return $this->customPaginationResponse($corporateAccount, $request, CorporateAccountResource::class, ['account_number', 'status']);
+    }
+    public function listPOSAccount(Request $request): JsonResponse
+    {
+        $corporateAccount = AdminService::corporateAccountList('4');
         return $this->customPaginationResponse($corporateAccount, $request, CorporateAccountResource::class, ['account_number', 'status']);
     }
 
     public function corporateAccountSummary(Request $request): JsonResponse
     {
-        return $this->successDataResponse(AdminService::corporateAccountSummary());
+        return $this->successDataResponse(AdminService::corporateAccountSummary(3));
+    }
+    public function POSAccountSummary(Request $request): JsonResponse
+    {
+        return $this->successDataResponse(AdminService::corporateAccountSummary(4));
     }
 
 

@@ -64,6 +64,9 @@ class AccountController extends Controller
         return $this->successResponse(message: 'Bank account reference submitted successfully.');
     }
 
+    /**
+     * @throws CustomException
+     */
     public function updateBankAccountReference(UpdateBankAccountReferenceData $request): JsonResponse
     {
         $data = $request->validated();
@@ -80,6 +83,7 @@ class AccountController extends Controller
 
     /**
      * @throws RandomException
+     * @throws CustomException
      */
     public function submitCorporateAccountCompanyDocument(CompanyDocumentData $request): JsonResponse
     {
@@ -88,6 +92,9 @@ class AccountController extends Controller
         return $this->successResponse(message: 'Company documents submitted successfully.');
     }
 
+    /**
+     * @throws CustomException
+     */
     public function updateDirectorySignatoryInformation(UpdateDirectorySignatoryData $request): JsonResponse
     {
         $data = $request->validated();
