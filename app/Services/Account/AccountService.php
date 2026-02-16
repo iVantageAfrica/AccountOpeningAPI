@@ -253,6 +253,8 @@ class AccountService
             'account_type' => $data['account_type'],
             'account_number' => $data['account_number'],
             'bank_name' => $data['bank_name'],
+            'known_period' => $data['known_period'] ?? null,
+            'comment' => $data['comment'] ?? null,
             'is_submitted' => true,
             'submitted_at' => now(),
             'signature' => isset($data['signature']) && $data['signature'] instanceof UploadedFile

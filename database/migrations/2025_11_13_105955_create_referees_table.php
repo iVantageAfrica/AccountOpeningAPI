@@ -20,7 +20,7 @@ return new class () extends Migration {
             $table->string('account_name')->nullable();
             $table->string('bank_name')->nullable();
             $table->string('account_type')->nullable();
-            $table->string('know_period')->nullable();
+            $table->string('known_period')->nullable();
             $table->longText('comment')->nullable();
             $table->longText('signature')->nullable();
             $table->boolean('is_submitted')->default(false);

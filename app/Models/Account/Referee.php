@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $account_name
  * @property string|null $bank_name
  * @property string|null $account_type
- * @property string|null $know_period
+ * @property string|null $known_period
  * @property string|null $comment
  * @property string|null $signature
  * @property bool $is_submitted
@@ -36,7 +36,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereEmailAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereIsSubmitted($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereKnowPeriod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereKnownPeriod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereMobileNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee wherePhoneNumber($value)
@@ -50,7 +50,7 @@ class Referee extends Model
     use HasFactory;
     protected $fillable = [
         'name', 'email_address','phone_number', 'mobile_number', 'account_number', 'account_name','account_type', 'bank_name', 'signature',
-        'know_period', 'comment', 'is_submitted', 'submitted_at',
+        'known_period', 'comment', 'is_submitted', 'submitted_at',
 ];
 
     protected $casts = [
