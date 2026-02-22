@@ -139,7 +139,7 @@ class ImperialMortgage
     }
 
 
-    public static function registerMobileUser(array $data): bool
+    public static function internetBankingRegistration(array $data): bool
     {
         return true;
         $payload = [

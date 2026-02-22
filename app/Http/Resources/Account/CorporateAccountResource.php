@@ -35,6 +35,7 @@ class CorporateAccountResource extends JsonResource
             'companyName' => $this->company_name ?? null,
             'registrationNumber' => $this->registration_number ?? null,
             'companyType' => $this->companyType->name ?? null,
+            'companyTypeId' => $this->company_type_id ?? null,
             'tin' => $this->tin ?? null,
             'companyAddress' => $this->address ?? null,
             'phoneNumber' => $this->phone_number ?? null,

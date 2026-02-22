@@ -9,7 +9,6 @@ use App\Http\Requests\Account\BankAccountReferenceData;
 use App\Http\Requests\Account\CompanyDocumentData;
 use App\Http\Requests\Account\CorporateAccountData;
 use App\Http\Requests\Account\IndividualAccountData;
-use App\Http\Requests\Account\POSMerchantAccountData;
 use App\Http\Requests\Account\UpdateBankAccountReferenceData;
 use App\Http\Requests\Account\UpdateDirectorySignatoryData;
 use App\Services\Account\AccountService;
@@ -32,16 +31,6 @@ class AccountController extends Controller
         return $this->successDataResponse(data: ['accountNumber' => $accountNumber], message: 'Individual account created successfully.');
     }
 
-    /**
-     * @throws Throwable
-     * @throws CustomException
-     */
-    public function createPosAccount(POSMerchantAccountData $request): JsonResponse
-    {
-        $data = $request->validated();
-        $accountNumber = AccountService::posMerchantAccount($data);
-        return $this->successDataResponse(data: ['accountNumber' => $accountNumber], message: 'Merchant account created successfully.');
-    }
 
     /**
      * @throws Throwable

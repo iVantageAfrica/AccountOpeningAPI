@@ -11,7 +11,10 @@
         <p style="line-height: 30px; font-size: 16px; margin: 0;">
             <b>Account Details</b>
         <ul style="margin-top: 0px;">
-            <li style="margin-bottom: 5px;"><b>Account Name: </b> {{ $customerName }}</li>
+            <li style="margin-bottom: 5px;"><b>Account Name: </b>{{ in_array($accountTypeId, [3,4], true)
+                    ? "$companyName"
+                    : $customerName }}
+            </li>
             <li style="margin-bottom: 5px;"><b>Account Number: </b> {{ $accountNumber }}</li>
             <li style="margin-bottom: 5px;"><b>Account Type: </b> {{ $accountType }}</li>
             <li style="margin-bottom: 5px;"><b>Date:</b> {{ date('Y-m-d') }}</li>
@@ -42,7 +45,7 @@
             <br><br>
         @endif
 
-        @if($accountTypeId === 1 || $accountTypeId === 2 )
+        @if(in_array($accountTypeId, [1,2,4], true) )
             <p style="line-height: 30px; font-size: 16px; margin: 0;">
                 <b>Access to Digital Banking Services</b>
             </p>
@@ -67,7 +70,7 @@
             <br><br>
         @endif
 
-        @if($accountTypeId === 3 || $accountTypeId === 4)
+        @if($accountTypeId === 3)
             <p style="line-height: 30px; font-size: 16px; margin: 0;">
                 <b>Important Notice on Digital Banking Access </b>
             </p>

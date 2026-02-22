@@ -28,6 +28,8 @@ class AccountNotificationJob implements ShouldQueue
         public readonly ?string $username,
         public readonly ?string $password,
         public readonly ?string $pin,
+        public readonly ?string $companyName,
+        public readonly ?string $businessEmailAddress,
     ) {
     }
 
@@ -45,6 +47,8 @@ class AccountNotificationJob implements ShouldQueue
             'username' => $this->username,
             'password' => $this->password,
             'pin' => $this->pin,
+            'companyName' => $this->companyName,
+            'businessEmailAddress' => $this->businessEmailAddress,
         ]);
     }
 }

@@ -39,7 +39,7 @@ class CorporateAccountData extends BaseRequest
             'account_type_id' => ['required', 'numeric', Rule::exists(AccountType::class, 'id')],
             'company_name' => ['required', 'string', 'max:150'],
             'registration_number' => ['required', 'string', 'max:50'],
-            'company_type_id' => ['integer', 'required', 'digits_between:1,5'],
+            'company_type_id' => ['integer', 'required', 'digits_between:1,15'],
             'tin' => ['required', 'string', 'max:50'],
             'address' => ['required', 'string', 'max:150'],
             'phone_number' => ['nullable','string', 'max:30'],
@@ -52,7 +52,7 @@ class CorporateAccountData extends BaseRequest
             'director' => ['array', 'required'],
             'director.*.lastname' => ['required','string', 'max:100'],
             'director.*.firstname' => ['required', 'string', 'max:100'],
-            'director.*.bvn' => ['required', 'string', 'max:20'],
+            'director.*.bvn' => ['nullable', 'string', 'max:20'],
             'director.*.nin' => ['nullable', 'string', 'max:20'],
             'director.*.email_address' => ['required', 'email', 'max:150'],
             'director.*.phone_number' => ['required', 'string','max:30'],
@@ -60,8 +60,8 @@ class CorporateAccountData extends BaseRequest
             'signatory.*.name' => ['required', 'string', 'max:100'],
             'signatory.*.email_address' => ['required', 'string', 'max:150'],
             'signatory.*.phone_number' => ['required', 'string', 'max:30'],
-            'signatory.*.bvn' => ['nullable', 'string', 'max:20'],
-            'signatory.*.nin' => ['nullable', 'string', 'max:20'],
+            'signatory.*.bvn' => ['required', 'string', 'max:20'],
+            'signatory.*.nin' => ['required', 'string', 'max:20'],
          ];
     }
 }

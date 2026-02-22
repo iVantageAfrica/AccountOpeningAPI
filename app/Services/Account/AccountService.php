@@ -14,7 +14,6 @@ use App\Models\Account\DebitCardRequest;
 use App\Models\Account\Directory;
 use App\Models\Account\Document;
 use App\Models\Account\IndividualAccount;
-use App\Models\Account\MerchantAccount;
 use App\Models\Account\Referee;
 use App\Models\Account\Signatory;
 use App\Models\User;
@@ -63,14 +62,7 @@ class AccountService
         $accountNumber = ImperialMortgage::createIndividualAccount($userData);
 
         //Create and assigned user to mobile banking
-        $userData['username'] = !empty($userData['email']) ? $userData['email'] : strtolower($userData['firstname'] . '.' . $userData['lastname']);
-        $userData['password'] = ucfirst(generateRandomAlphanumeric(6).'@'.generateRandomNumber(3));
-        $userData['pin'] = generateRandomNumber(4);
-        $isMobileRegistered = ImperialMortgage::registerMobileUser($userData);
-
-        $password = $isMobileRegistered ? $userData['password'] : '';
-        $username = $isMobileRegistered ? $userData['username'] : '';
-        $pin = $isMobileRegistered ? $userData['pin'] : '';
+        $internetBankingRegistration = self::internetBankingAssignment($userData);
 
         //Save Account Data
         DB::transaction(static function () use ($userData, $accountNumber, $data) {
@@ -96,46 +88,23 @@ class AccountService
         });
 
         $bankAccountReferenceUrl = self::generateAccountReferenceUrl($accountNumber, $data['account_type_id'], $userData['firstname'].' '.$userData['lastname']);
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $bankAccountReferenceUrl, $username, $password, $pin);
+        AccountNotificationJob::dispatch(
+            $data['bvn'],
+            $accountNumber,
+            $accountType->id,
+            $accountType->name,
+            $bankAccountReferenceUrl,
+            $internetBankingRegistration['username'],
+            $internetBankingRegistration['password'],
+            $internetBankingRegistration['pin'],
+            null,
+            null
+        );
+
         $userModel->update(['status' => true]);
         return $accountNumber;
     }
 
-    /**
-     * @throws Throwable
-     * @throws CustomException
-     */
-    public static function posMerchantAccount(array $data): string
-    {
-        //Get user account data from user using the BVN and Check if user has such account
-        $userData = User::whereBvn($data['bvn'])->firstOrFail()->toArray();
-        self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'MERCHANT');
-
-        //Create user merchant account
-        $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
-        $userData['account_type'] = $accountType->code;
-        $accountNumber = ImperialMortgage::createMerchantAccount($userData);
-
-        //Save Account Data
-        DB::transaction(static function () use ($userData, $accountNumber, $data) {
-            //Upload Documents
-            $data['document_id'] = Document::create(self::processDocuments($data))->id;
-            $data['cac'] = isset($data['cac']) && $data['cac'] instanceof UploadedFile ? FileUploadHelper::uploadFile($data['cac']) : null;
-
-            //Create Merchant Account
-            $data['account_number'] = $accountNumber;
-            $data['user_id'] = $userData['id'];
-            MerchantAccount::create($data);
-
-            //Save user card request
-            if ($data['debit_card']) {
-                DebitCardRequest::create($data);
-            }
-        });
-
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->name);
-        return $accountNumber;
-    }
 
     /**
      * @throws Throwable
@@ -182,8 +151,29 @@ class AccountService
                 'ty' => EncryptionHelper::secureTestString($data['company_type_id']),
                 'bsNa' => EncryptionHelper::secureTestString($data['company_name']),
             ]);
-        AccountNotificationJob::dispatch($data['bvn'], $accountNumber, $accountType->id, $accountType->name, $companyDocumentUrl, null, null, null);
 
+        $username = null;
+        $password = null;
+        $pin = null;
+        if ($accountType->id === 4) {
+            //Create and assigned user to mobile banking
+            $internetBankingRegistration = self::internetBankingAssignment($userData);
+            $username = $internetBankingRegistration['username'];
+            $password = $internetBankingRegistration['password'];
+            $pin = $internetBankingRegistration['pin'];
+        }
+        AccountNotificationJob::dispatch(
+            $data['bvn'],
+            $accountNumber,
+            $accountType->id,
+            $accountType->name,
+            $companyDocumentUrl,
+            $username,
+            $password,
+            $pin,
+            $data['company_name'],
+            $data['business_email']
+        );
 
         //Generate Signatory and Directory Verification Links and send mails
         self::dispatchSignatoryDirectoryJobs($data['director'] ?? [], $directorsId, $data['company_name'], 'directory', $data['company_type_id']);
@@ -332,8 +322,7 @@ class AccountService
     {
         $query = match (strtoupper($type)) {
             'INDIVIDUAL' => IndividualAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),
-            'MERCHANT' => MerchantAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),
-            'CORPORATE' => CorporateAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),
+            'MERCHANT', 'CORPORATE' => CorporateAccount::whereUserId($userId)->whereAccountTypeId($accountTypeId),
             default => null
         };
 
@@ -436,4 +425,20 @@ class AccountService
         return $baseUrl . http_build_query($params);
     }
 
+    private static function internetBankingAssignment(array $userData): array
+    {
+        //Create and assigned user to mobile banking
+        $username = !empty($userData['email']) ? $userData['email'] : strtolower($userData['firstname'] . '.' . $userData['lastname']);
+        $password = ucfirst(generateRandomAlphanumeric(6).'@'.generateRandomNumber(3));
+        $pin = generateRandomNumber(4);
+        $userData['password'] = $password;
+        $userData['pin'] = $pin;
+        $userData['username'] = $username;
+        $internetBankingReg = ImperialMortgage::internetBankingRegistration($userData);
+
+        return ['username' => $internetBankingReg ? $username : '',
+                'pin' => $internetBankingReg ? $pin : '',
+                'password' => $internetBankingReg ? $password : '',
+            ];
+    }
 }

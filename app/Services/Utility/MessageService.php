@@ -53,8 +53,8 @@ class MessageService
         $data['firstname'] = $userData->firstname;
         $data['customerName'] = $userData->firstname.' '.$userData->lastname;
         $data['email'] = $userData->email;
-        $emailView = $data['accountTypeId'] === 2 ? 'emails.savingsAccountCreation' : 'emails.CurrentAccountCreation';
-        self::mailMessage($userData->email, 'Your Imperial Homes Mortgage Bank Account Has Been Successfully Opened', 'emails.accountCreation', $data);
+        $emailAddress = empty($data['businessEmailAddress']) ? $userData->email : $data['businessEmailAddress'];
+        self::mailMessage($emailAddress, 'Your Imperial Homes Mortgage Bank Account Has Been Successfully Opened', 'emails.accountCreation', $data);
     }
 
     public static function accountReferenceMessage(array $data): void
