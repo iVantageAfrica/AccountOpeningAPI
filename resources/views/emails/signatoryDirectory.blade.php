@@ -31,7 +31,7 @@
                 the link below to provide your KYC details:</b>
         </p>
         <a href="{{ $url }}" style="color:#DE4F01">
-            {{ Str::limit($url, 20) }}
+            {{ Str::limit($url, 100) }}
         </a>
         <br><br>
         <p style="line-height: 30px; font-size: 16px; margin: 0;">

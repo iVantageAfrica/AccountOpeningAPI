@@ -18,6 +18,7 @@ return new class () extends Migration {
             $table->string('account_number')->nullable();
             $table->string('mother_maiden_name')->nullable();
             $table->string('phone_number')->nullable();
+            $table->string('account_officer')->nullable();
             $table->string('employment_status')->nullable();
             $table->string('employer')->nullable();
             $table->string('employer_address')->nullable();

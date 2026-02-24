@@ -9,10 +9,10 @@
         </p>
 
         <p style="line-height: 30px; font-size: 16px; margin: 0;">
-            <b>Account Details</b>
+            <b>Account Information</b></p>
         <ul style="margin-top: 0px;">
             <li style="margin-bottom: 5px;"><b>Account Name: </b>{{ in_array($accountTypeId, [3,4], true)
-                    ? "$companyName"
+                    ? $companyName
                     : $customerName }}
             </li>
             <li style="margin-bottom: 5px;"><b>Account Number: </b> {{ $accountNumber }}</li>
@@ -20,7 +20,6 @@
             <li style="margin-bottom: 5px;"><b>Date:</b> {{ date('Y-m-d') }}</li>
             <li style="margin-bottom: 5px;"><b>Time:</b> {{ date('H:i:s') }}</li>
         </ul>
-        </p>
 
         @if(!empty($accountReferenceUrl) && $accountTypeId === 1 )
             <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">
@@ -45,7 +44,7 @@
             <br><br>
         @endif
 
-        @if(in_array($accountTypeId, [1,2,4], true) )
+        @if(in_array($accountTypeId, [1,2], true) )
             <p style="line-height: 30px; font-size: 16px; margin: 0;">
                 <b>Access to Digital Banking Services</b>
             </p>
@@ -58,6 +57,34 @@
             <ul style="margin-top: -15px;">
                 <li style="margin-bottom: 5px;"><b>Username: </b> {{ $username }}</li>
                 <li style="margin-bottom: 5px;"><b>Temporary PIN: </b> {{ $pin }}</li>
+                <li style="margin-bottom: 5px;"><b>Temporary Password: </b> {{ $password }}</li>
+            </ul>
+
+            <p style="line-height: 30px; font-size: 16px; margin: 0;">
+                Please proceed to log in via our <b>Internet Banking portal or Mobile App</b> using the credentials
+                above.
+                For security reasons, <b>you will be required to create a new login password and transaction PIN</b>
+                on your first login.
+            </p>
+            <br><br>
+        @endif
+
+        @if($accountTypeId === 4 )
+            <p style="line-height: 30px; font-size: 16px; margin: 0;">
+                <b>Digital Banking & Account Monitoring </b>
+            </p>
+            <p class="details" style="line-height: 30px; font-size: 16px; margin-top: 0px;">You now have access to our Internet Banking platforms, enabling you to:
+            </p>
+            <ul style="margin-top: -15px;">
+                <li style="margin-bottom: 5px;">Monitor POS settlements</li>
+                <li style="margin-bottom: 5px;">Track transactions</li>
+                <li style="margin-bottom: 5px;">Manage your account securely</li>
+            </ul>
+            <p style="line-height: 30px; font-size: 16px; margin: 0;">
+                <b>Your Login Details </b>
+            </p>
+            <ul style="margin-top: -15px;">
+                <li style="margin-bottom: 5px;"><b>Username: </b> {{ $username }}</li>
                 <li style="margin-bottom: 5px;"><b>Temporary Password: </b> {{ $password }}</li>
             </ul>
 

@@ -49,6 +49,8 @@ class CompanyDocumentData extends BaseRequest
             'nipc_certificate' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],
             'business_permit' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],
             'due_diligence' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],
+            'scuml_certificate' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],
+            'passport' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:3072'],
         ];
     }
 }

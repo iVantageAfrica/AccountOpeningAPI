@@ -44,6 +44,7 @@ class IndividualAccountData extends BaseRequest
             'employer' => ['nullable', 'string','max:100'],
             'referrer' => ['nullable', 'string','max:50'],
             'occupation' => ['nullable', 'string', 'max:50'],
+            'account_officer' => ['nullable', 'string', 'max:100'],
             'marital_status' => ['required','string','max:20'],
             'house_number' => ['required','string','max:20'],
             'street' => ['required', 'string','max:30'],

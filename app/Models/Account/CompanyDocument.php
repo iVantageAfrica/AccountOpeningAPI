@@ -68,7 +68,7 @@ class CompanyDocument extends Model
     protected $fillable = [
         'cac', 'memart', 'cac_co2', 'cac_co7', 'board_resolution', 'declaration_form','partnership_resolution', 'proprietor_declaration', 'signatory_mandate', 'partnership_deed',
         'tin', 'society_resolution', 'principal_list', 'constitution', 'trustee_list', 'trust_deed', 'trustee_resolution', 'nipc_certificate',
-        'business_permit', 'due_diligence', 'is_submitted', 'submitted_at',
+        'business_permit', 'due_diligence', 'is_submitted', 'submitted_at','scuml_certificate', 'passport',
     ];
 
     protected $casts = [

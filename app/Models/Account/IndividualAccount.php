@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $next_of_kin_address
  * @property string|null $next_of_kin_relationship
  * @property string|null $next_of_kin_phone_number
+ * @property string|null $account_officer
  * @property int|null $document_id
  * @property Referee|null $referees
  * @property string|null $referrer
@@ -53,6 +54,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereDocumentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereEmployer($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereEmployerAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereAccountOfficer($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereEmploymentStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereMaritalStatus($value)
@@ -82,7 +84,7 @@ class IndividualAccount extends Model
     protected $fillable = [
         'user_id', 'account_type_id','account_number','mother_maiden_name','phone_number','employment_status','employer_address', 'employer',
         'title', 'marital_status', 'address', 'next_of_kin_name','next_of_kin_address','next_of_kin_relationship','origin','lga',
-        'next_of_kin_phone_number', 'document_id', 'referees','debit_card','status','referrer', 'occupation',
+        'next_of_kin_phone_number', 'document_id', 'referees','debit_card','status','referrer', 'occupation','account_officer',
     ];
 
     public function user(): BelongsTo

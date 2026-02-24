@@ -61,6 +61,7 @@ class IndividualAccountResource extends JsonResource
             'debitCard' => $this->debit_card ?? null,
             'status' => $this->status ?? null,
             'referrer' => $this->referrer ?? null,
+            'accountOfficer' => $this->account_officer ?? null,
             'occupation' => $this->occupation ?? null,
             'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
             'documents' => DocumentResource::make($this->whenLoaded('document')),

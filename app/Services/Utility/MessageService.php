@@ -64,7 +64,7 @@ class MessageService
 
     public static function accountSignatoryDirectoryMessage(array $data): void
     {
-        $subject = $data['type'] === 'signatory' ? 'Request for Verification of Account Signatories' : 'Account Directory Confirmation Request';
+        $subject = $data['type'] === 'signatory' ? 'Request for Verification of Account Signatories' : 'Account Director Confirmation Request';
         self::mailMessage($data['email'], $subject, 'emails.signatoryDirectory', $data);
     }
 

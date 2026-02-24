@@ -36,6 +36,8 @@ class CompanyDocumentResource extends JsonResource
             'nipcCertificate' => $this->nipc_certificate ?? null,
             'businessPermit' => $this->business_permit ?? null,
             'dueDiligence' => $this->due_diligence ?? null,
+            'scumlCertificate' => $this->scuml_certificate ?? null,
+            'passport' => $this->passport ?? null,
         ];
     }
 }
