@@ -57,7 +57,7 @@ class ImperialMortgage
      */
     public static function createIndividualAccount(array $data): string
     {
-        return generateRandomNumber(11);
+        //        return generateRandomNumber(11);
         $baseurl = config('services.accountOpening.baseUrl');
         $residential_address = $data['house_number'].', '.$data['street'].', '.$data['city'].', '.$data['state'];
         $params = [
@@ -75,10 +75,6 @@ class ImperialMortgage
         return self::accountOpening($baseurl.'/CreateAccount', $params);
     }
 
-    public static function createMerchantAccount(array $data): string
-    {
-        return generateRandomNumber(11);
-    }
 
     /**
      * @throws CustomException
@@ -100,7 +96,7 @@ class ImperialMortgage
             'Director2FirstName' => $data['director'][1]['firstname'] ?? '',
             'Director2Bvn' => $data['director'][1]['bvn'] ?? '',
         ];
-        return generateRandomNumber(11);
+        //        return generateRandomNumber(11);
         return self::accountOpening($baseurl.'/CreateCorporateAccount', $params);
     }
 
@@ -141,7 +137,7 @@ class ImperialMortgage
 
     public static function internetBankingRegistration(array $data): bool
     {
-        return true;
+        //        return true;
         $payload = [
             'username'      => $data['username'],
             'firstname'     => $data['firstname'],
