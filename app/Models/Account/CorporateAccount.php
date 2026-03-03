@@ -78,7 +78,7 @@ class CorporateAccount extends Model
     protected $fillable = [
         'user_id', 'account_type_id','account_number', 'company_name','registration_number','company_type_id','tin','status',
         'address','phone_number','business_email','city', 'lga','state','account_officer','signatories','referees',
-        'debit_card','directories','company_document_id','debit_card',
+        'debit_card','directories','company_document_id',
     ];
 
     protected $casts = [

@@ -4,6 +4,7 @@ namespace App\Services\Account;
 
 use App\Exceptions\CustomException;
 use App\Helpers\FileUploadHelper;
+use App\Models\Account\CompanyDocument;
 use App\Models\Account\CorporateAccount;
 use App\Models\Account\DebitCardRequest;
 use App\Models\Account\Directory;
@@ -13,6 +14,7 @@ use App\Models\Account\Referee;
 use App\Models\Account\Signatory;
 use App\Models\Admin;
 use App\Models\User;
+use App\Models\Utility\CompanyType;
 use App\Services\Utility\JWTTokenService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -160,7 +162,7 @@ class AdminService
      */
     public static function dataLink(): void
     {
-        $path = storage_path('app/database_export.json');
+        $path = storage_path('app/account-opening.json');
         $jsonContent = file_get_contents($path);
         $data = json_decode($jsonContent, true, 512, JSON_THROW_ON_ERROR);
         $corporates = $data['corporate_accounts'];
@@ -173,68 +175,149 @@ class AdminService
                 'lastname' => $admin['lastname'],
                 'email' => $admin['email'],
                 'password' => Hash::make($admin['password']),
-                'is_admin' => $admin['admin'],
+                'is_admin' => $admin['admin'] === 't',
             ]);
         }
 
-        //        //Create Individual Account
-        //        $individualAccount = $data['individual_accounts'];
-        //        foreach ($individualAccount as $individual) {
-        //            if (empty($individual['bvn'])) {
-        //                continue;
-        //            }
-        //
-        //            //Create user account, but check if bvn exist before creating
-        //            $user = User::whereBvn($individual['bvn'])->first();
-        //            if (!$user) {
-        //                $user = User::create([
-        //                    'bvn' =>  $individual['bvn'],
-        //                    'nin' => $individual['NIN'] ?? null,
-        //                    'firstname' => $individual['firstname'] ?? null,
-        //                    'lastname' => $individual['lastname'] ??  null,
-        //                    'middle_name' => $individual['middlename'] ?? null,
-        //                    'email' => $individual['email'] ?? null,
-        //                    'phone_number' => $individual['phoneno'] ?? null,
-        //                    'address' => $individual['address'] ?? null,
-        //                    'gender' => $individual['gender'] ?? null,
-        //                    'date_of_birth' => $individual['dateofbirth'] ?? $data['DateOfBirt'] ?? null,
-        //                ]);
-        //            }
-        //            $userId = $user->id;
-        //
-        //            //check if its savings account or current account and upload referee
-        //            $accountTypeId = $individual['accounttype']  === '101' ? '1' : '2';
-        //            if ($accountTypeId === '1') {
-        //                //Create user bank referee
-        //                $refereeId = self::processRefereesFromIndividual($individual);
-        //            }
-        //
-        //            //Create document to get id
-        //            $docFields = [
-        //                'valid_id'   => FileUploadHelper::buildDocumentPath($individual['identification'] ?? null),
-        //                'signature'  => FileUploadHelper::buildDocumentPath($individual['signaturemandate'] ?? null),
-        //                'utility_bill' => FileUploadHelper::buildDocumentPath($individual['utilitybill'] ?? null),
-        //                'passport'   => FileUploadHelper::buildDocumentPath($individual['image'] ?? null),
-        //            ];
-        //            $hasDocument = collect($docFields)->filter()->isNotEmpty();
-        //            $documentId = $hasDocument ? Document::create($docFields)->id : null;
-        //
-        //            //Create Individual account
-        //            IndividualAccount::create([
-        //                'user_id' => $userId,                                               'account_type_id' => $accountTypeId,
-        //                'account_number' => $individual['accountno'] ?? null,               'mother_maiden_name' => $individual['mothermaidenname'] ?? null,
-        //                'phone_number' => $individual['phoneno2'] ?? null,                  'employment_status' => $individual['employmentstatus'] ?? null,
-        //                'employer_address' => $individual['employeraddress'] ?? null,       'employer' => $individual['employername'] ?? null,
-        //                'title' => $individual['title'] ?? null,                            'status' => $individual['status'] ?? null,
-        //                'referrer' => $individual['referrer'] ?? null,                      'occupation' => $individual['occupation'] ?? null,
-        //                'marital_status' => $individual['maritalstatus'] ?? null,           'address' => $individual['address'],
-        //                'next_of_kin_name' => $individual['nextofkinname'] ?? null,         'next_of_kin_address' => $individual['nextofkinaddress'] ?? null,
-        //                'next_of_kin_relationship' => $individual['nextofkinrelationship'] ?? null,  'next_of_kin_phone_number' => $individual['nextofkinphone'] ?? null,
-        //                'document_id' => $documentId,                                        'referees' => $refereeId ?? null,
-        //                'debit_card' => false,
-        //            ]);
-        //
-        //        }
+        //Create Individual Account
+        $individualAccount = $data['individual_accounts'];
+        foreach ($individualAccount as $individual) {
+            if (empty($individual['bvn'])) {
+                continue;
+            }
+
+            //Create user account, but check if bvn exist before creating
+            $user = User::whereBvn($individual['bvn'])->first();
+            if (!$user) {
+                $user = User::create([
+                    'bvn' =>  $individual['bvn'],
+                    'nin' => $individual['NIN'] ?? null,
+                    'firstname' => $individual['firstname'] ?? null,
+                    'lastname' => $individual['lastname'] ??  null,
+                    'middle_name' => $individual['middlename'] ?? null,
+                    'email' => $individual['email'] ?? null,
+                    'phone_number' => $individual['phoneno'] ?? null,
+                    'address' => $individual['address'] ?? null,
+                    'gender' => $individual['gender'] ?? null,
+                    'date_of_birth' => $individual['dateofbirth'] ?? $data['DateOfBirt'] ?? null,
+                    'status' => true,
+                ]);
+            }
+            $userId = $user->id;
+
+            //check if its savings account or current account and upload referee
+            $accountTypeId = $individual['accounttype']  === '101' ? '1' : '2';
+            $refereeId = [];
+            if ($accountTypeId === '1') {
+                //Create user bank referee
+                $refereeId = self::processRefereesFromIndividual($individual);
+            }
+
+            //Create document to get id
+            $docFields = [
+                'valid_id'   => FileUploadHelper::buildDocumentPath($individual['identification'] ?? null),
+                'signature'  => FileUploadHelper::buildDocumentPath($individual['signaturemandate'] ?? null),
+                'utility_bill' => FileUploadHelper::buildDocumentPath($individual['utilitybill'] ?? null),
+                'passport'   => FileUploadHelper::buildDocumentPath($individual['image'] ?? null),
+            ];
+            $hasDocument = collect($docFields)->filter()->isNotEmpty();
+            $documentId = $hasDocument ? Document::create($docFields)->id : null;
+
+            //Create Individual account
+            IndividualAccount::create([
+                'user_id' => $userId,
+                'account_type_id' => $accountTypeId,
+                'account_number' => $individual['accountno'] ?? null,
+                'mother_maiden_name' => $individual['mothermaidenname'] ?? null,
+                'phone_number' => $individual['phoneno2'] ?? null,
+                'employment_status' => $individual['employmentstatus'] ?? null,
+                'employer_address' => $individual['employeraddress'] ?? null,
+                'employer' => $individual['employername'] ?? null,
+                'title' => $individual['title'] ?? null,
+                'status' => $individual['status'] ?? null,
+                'referrer' => $individual['referrer'] ?? null,
+                'occupation' => $individual['occupation'] ?? null,
+                'marital_status' => $individual['maritalstatus'] ?? null,
+                'address' => $individual['address'],
+                'next_of_kin_name' => $individual['nextofkinname'] ?? null,
+                'next_of_kin_address' => $individual['nextofkinaddress'] ?? null,
+                'next_of_kin_relationship' => $individual['nextofkinrelationship'] ?? null,
+                'next_of_kin_phone_number' => $individual['nextofkinphone'] ?? null,
+                'document_id' => $documentId,
+                'referees' => $refereeId ?? null,
+                'debit_card' => !($individual['atm_card_status'] === 'Not Specified'),
+            ]);
+
+        }
+
+        //Create Corporate Account
+        $corporateAccount = $data['corporate_accounts'];
+        foreach ($corporateAccount as $corporate) {
+            if (empty($corporate['accountno'])) {
+                continue;
+            }
+
+            //Create user account, but check if bvn exist before creating
+            $user = User::whereBvn($corporate['director1bvn'])->first();
+            if (!$user) {
+                $user = User::create([
+                    'bvn' =>  $corporate['director1bvn'] ?? $corporate['accountno'] ,
+                    'nin' => $corporate['NIN'] ?? null,
+                    'firstname' => $corporate['director1name'] ?? null,
+                    'lastname' => $corporate['director1othername'] ??  null,
+                    'middle_name' => '',
+                    'email' => $corporate['email'] ?? null,
+                    'phone_number' => $corporate['phoneno'] ?? null,
+                    'address' => $corporate['companyaddress'] ?? null,
+                    'gender' => null,
+                    'date_of_birth' =>  null,
+                    'status' => true,
+                ]);
+            }
+            $userId = $user->id;
+            //Process the referees
+            $refereeId = self::processRefereesFromIndividual($corporate);
+            $directors = self::processDirectors($corporate);
+            $signatories = self::processSignatories($corporate);
+            //Create document to get id
+            $docFields = [
+                'cac'   => FileUploadHelper::buildDocumentPath($corporate['certificateofincorporation'] ?? null),
+                'memart'  => FileUploadHelper::buildDocumentPath($corporate['certifiedmemorandum'] ?? null),
+                'cac_co7' => FileUploadHelper::buildDocumentPath($corporate['formcac7'] ?? null),
+                'cac_co2'   => FileUploadHelper::buildDocumentPath($corporate['formcac2'] ?? null),
+                'declaration_form' => FileUploadHelper::buildDocumentPath($corporate['formcac21'] ?? null),
+                'scuml_certificate' => FileUploadHelper::buildDocumentPath($corporate['scumlcertificate'] ?? null),
+                'board_resolution' => FileUploadHelper::buildDocumentPath($corporate['boardofresolution'] ?? null),
+            ];
+            $hasDocument = collect($docFields)->filter()->isNotEmpty();
+            $documentId = $hasDocument ? CompanyDocument::create($docFields)->id : null;
+
+            //Create Corporate account
+            CorporateAccount::create([
+                'user_id' => $userId,
+                'account_type_id' => '3',
+                'account_number' => $corporate['accountno'] ?? null,
+                'company_name' => $corporate['companyname'] ?? null,
+                'registration_number' => $individual['companyregno'] ?? null,
+                'company_type_id' => self::companyTypeId($corporate['companytype']) ?? 11,
+                'tin' => $corporate['tin'] ?? null,
+                'status' => $corporate['status'] ?? null,
+                'address' => $corporate['companyaddress'] ?? null,
+                'phone_number' => $corporate['phoneno'] ?? null,
+                'business_email' => $corporate['email'] ?? null,
+                'city' => null,
+                'lga' =>  null,
+                'state' => null,
+                'account_officer' => $corporate['referrer'] ?? null,
+                'company_document_id' => $documentId,
+                'referees' => $refereeId ?? null,
+                'debit_card' => false,
+                'directories' => $directors ?? null,
+                'signatories' => $signatories ?? null,
+            ]);
+
+        }
+
     }
 
     private static function processRefereesFromIndividual(array $individual): array
@@ -254,5 +337,52 @@ class AdminService
         }
 
         return $referees;
+    }
+
+    private static function companyTypeId(?string $companyType): ?int
+    {
+        return CompanyType::where('name', 'ILIKE', $companyType)
+            ->value('id');
+    }
+
+    private static function processDirectors(array $company): array
+    {
+        $directors = [];
+
+        foreach ([1, 2] as $index) {
+            $director = [
+                'lastname'      => $company["director{$index}name"] ?? null,
+                'firstname'     => $company["director{$index}othername"] ?? null,
+                'bvn'           => $company["director{$index}bvn"] ?? null,
+            ];
+
+            if (!array_filter($director)) {
+                continue;
+            }
+            $directors[] = Directory::create($director)->id;
+        }
+        return $directors;
+    }
+    private static function processSignatories(array $company): array
+    {
+        $signatories = [];
+
+        foreach (range(1, 6) as $index) {
+
+            $signatory = [
+                'name'               => $company["signatory{$index}name"] ?? null,
+                'bvn'                => $company["signatory{$index}bvn"] ?? null,
+                'signature'          => $company["signatory{$index}signature"] ?? null,
+                'passport'           => $company["signatory{$index}passport"] ?? null,
+                'proof_of_address'   => $company["signatory{$index}utilitybill"] ?? null,
+                'specimen_signature' => $company["signatory{$index}signature"] ?? null,
+            ];
+
+            if (!array_filter($signatory)) {
+                continue;
+            }
+            $signatories[] = Signatory::create($signatory)->id;
+        }
+        return $signatories;
     }
 }
