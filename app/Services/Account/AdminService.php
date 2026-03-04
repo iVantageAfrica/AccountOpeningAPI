@@ -30,7 +30,7 @@ class AdminService
      */
     public static function authenticate(array $data): array
     {
-        $admin = Admin::whereEmail($data['email'])->first();
+        $admin = Admin::whereEmail(strtolower($data['email']))->first();
         if (!$admin) {
             throw new CustomException('Invalid email address or password', 401);
         }
@@ -173,9 +173,10 @@ class AdminService
             Admin::create([
                 'firstname' => $admin['firstname'],
                 'lastname' => $admin['lastname'],
-                'email' => $admin['email'],
+                'email' => strtolower($admin['email']),
                 'password' => Hash::make($admin['password']),
-                'is_admin' => $admin['admin'] === 't',
+                'is_admin' => true,
+                'is_super_admin' => $admin['admin'] === 't',
             ]);
         }
 

@@ -33,15 +33,16 @@ class Admin extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'firstname', 'lastname', 'email', 'password', 'is_admin',
+        'firstname', 'lastname', 'email', 'password', 'is_admin','is_super_admin',
     ];
 
     protected $casts = [
         'is_admin' => 'boolean',
+        'is_super_admin' => 'boolean',
     ];
 
     public function adminInformation(): array
     {
-        return $this->only(['id','firstname', 'lastname', 'email', 'is_admin']);
+        return $this->only(['id','firstname', 'lastname', 'email', 'is_admin', 'is_super_admin']);
     }
 }
