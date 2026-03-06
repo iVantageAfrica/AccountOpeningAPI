@@ -4,20 +4,18 @@ namespace App\Services\Account;
 
 use App\Exceptions\CustomException;
 use App\Helpers\FileUploadHelper;
-use App\Models\Account\CompanyDocument;
 use App\Models\Account\CorporateAccount;
 use App\Models\Account\DebitCardRequest;
 use App\Models\Account\Directory;
-use App\Models\Account\Document;
 use App\Models\Account\IndividualAccount;
 use App\Models\Account\Referee;
 use App\Models\Account\Signatory;
 use App\Models\Admin;
 use App\Models\User;
-use App\Models\Utility\CompanyType;
 use App\Services\Utility\JWTTokenService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use JsonException;
 use Random\RandomException;
@@ -162,70 +160,109 @@ class AdminService
      */
     public static function dataLink(): void
     {
+        set_time_limit(0);
+        DB::disableQueryLog();
+
         $path = storage_path('app/account-opening.json');
         $jsonContent = file_get_contents($path);
         $data = json_decode($jsonContent, true, 512, JSON_THROW_ON_ERROR);
-        $corporates = $data['corporate_accounts'];
 
-        //Create admin account
-        $admins = $data['users'];
-        foreach ($admins as $admin) {
-            Admin::create([
+        /*
+        |--------------------------------------------------------------------------
+        | ADMINS
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($data['users'] as $admin) {
+
+            DB::table('admins')->insert([
                 'firstname' => $admin['firstname'],
                 'lastname' => $admin['lastname'],
                 'email' => strtolower($admin['email']),
                 'password' => Hash::make($admin['password']),
                 'is_admin' => true,
                 'is_super_admin' => $admin['admin'] === 't',
+                'created_at' => $admin['created_at'] ?? null,
+                'updated_at' => $admin['updated_at'] ?? null,
             ]);
         }
 
-        //Create Individual Account
-        $individualAccount = $data['individual_accounts'];
-        foreach ($individualAccount as $individual) {
+        /*
+        |--------------------------------------------------------------------------
+        | INDIVIDUAL ACCOUNTS
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($data['individual_accounts'] as $individual) {
+
             if (empty($individual['bvn'])) {
                 continue;
             }
 
-            //Create user account, but check if bvn exist before creating
-            $user = User::whereBvn($individual['bvn'])->first();
+            $user = DB::table('users')
+                ->where('bvn', $individual['bvn'])
+                ->first();
+
             if (!$user) {
-                $user = User::create([
-                    'bvn' =>  $individual['bvn'],
+
+                $userId = DB::table('users')->insertGetId([
+                    'bvn' => $individual['bvn'],
                     'nin' => $individual['NIN'] ?? null,
                     'firstname' => $individual['firstname'] ?? null,
-                    'lastname' => $individual['lastname'] ??  null,
+                    'lastname' => $individual['lastname'] ?? null,
                     'middle_name' => $individual['middlename'] ?? null,
                     'email' => $individual['email'] ?? null,
                     'phone_number' => $individual['phoneno'] ?? null,
                     'address' => $individual['address'] ?? null,
                     'gender' => $individual['gender'] ?? null,
-                    'date_of_birth' => $individual['dateofbirth'] ?? $data['DateOfBirt'] ?? null,
+                    'date_of_birth' => $individual['dateofbirth'] ?? null,
                     'status' => true,
+                    'created_at' => $individual['created_at'] ?? null,
+                    'updated_at' => $individual['updated_at'] ?? null,
                 ]);
-            }
-            $userId = $user->id;
 
-            //check if its savings account or current account and upload referee
-            $accountTypeId = $individual['accounttype']  === '101' ? '1' : '2';
+            } else {
+                $userId = $user->id;
+            }
+
+            /*
+            | Account Type
+            */
+
+            $accountTypeId = $individual['accounttype'] === '101' ? '1' : '2';
+
+            /*
+            | Referees
+            */
+
             $refereeId = [];
             if ($accountTypeId === '1') {
-                //Create user bank referee
                 $refereeId = self::processRefereesFromIndividual($individual);
             }
 
-            //Create document to get id
-            $docFields = [
-                'valid_id'   => FileUploadHelper::buildDocumentPath($individual['identification'] ?? null),
-                'signature'  => FileUploadHelper::buildDocumentPath($individual['signaturemandate'] ?? null),
-                'utility_bill' => FileUploadHelper::buildDocumentPath($individual['utilitybill'] ?? null),
-                'passport'   => FileUploadHelper::buildDocumentPath($individual['image'] ?? null),
-            ];
-            $hasDocument = collect($docFields)->filter()->isNotEmpty();
-            $documentId = $hasDocument ? Document::create($docFields)->id : null;
+            /*
+            | Documents
+            */
 
-            //Create Individual account
-            IndividualAccount::create([
+            $docFields = [
+                'valid_id' => FileUploadHelper::buildDocumentPath($individual['identification'] ?? null),
+                'signature' => FileUploadHelper::buildDocumentPath($individual['signaturemandate'] ?? null),
+                'utility_bill' => FileUploadHelper::buildDocumentPath($individual['utilitybill'] ?? null),
+                'passport' => FileUploadHelper::buildDocumentPath($individual['image'] ?? null),
+            ];
+
+            $hasDocument = collect($docFields)->filter()->isNotEmpty();
+            $documentId = null;
+
+            if ($hasDocument) {
+                $documentId = DB::table('documents')->insertGetId($docFields);
+            }
+
+            /*
+            | Create Individual Account
+            */
+
+            DB::table('individual_accounts')->insert([
                 'user_id' => $userId,
                 'account_type_id' => $accountTypeId,
                 'account_number' => $individual['accountno'] ?? null,
@@ -239,67 +276,88 @@ class AdminService
                 'referrer' => $individual['referrer'] ?? null,
                 'occupation' => $individual['occupation'] ?? null,
                 'marital_status' => $individual['maritalstatus'] ?? null,
-                'address' => $individual['address'],
+                'address' => $individual['address'] ?? null,
                 'next_of_kin_name' => $individual['nextofkinname'] ?? null,
                 'next_of_kin_address' => $individual['nextofkinaddress'] ?? null,
                 'next_of_kin_relationship' => $individual['nextofkinrelationship'] ?? null,
                 'next_of_kin_phone_number' => $individual['nextofkinphone'] ?? null,
                 'document_id' => $documentId,
-                'referees' => $refereeId ?? null,
+                'referees' => !empty($refereeId) ? json_encode($refereeId) : null,
                 'debit_card' => !($individual['atm_card_status'] === 'Not Specified'),
+                'created_at' => $individual['created_at'] ?? null,
+                'updated_at' => $individual['updated_at'] ?? null,
             ]);
-
         }
 
-        //Create Corporate Account
-        $corporateAccount = $data['corporate_accounts'];
-        foreach ($corporateAccount as $corporate) {
+        /*
+        |--------------------------------------------------------------------------
+        | CORPORATE ACCOUNTS
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($data['corporate_accounts'] as $corporate) {
+
             if (empty($corporate['accountno'])) {
                 continue;
             }
 
-            //Create user account, but check if bvn exist before creating
-            $user = User::whereBvn($corporate['director1bvn'])->first();
+            $user = DB::table('users')
+                ->where('bvn', $corporate['director1bvn'])
+                ->first();
+
             if (!$user) {
-                $user = User::create([
-                    'bvn' =>  $corporate['director1bvn'] ?? $corporate['accountno'] ,
-                    'nin' => $corporate['NIN'] ?? null,
+
+                $userId = DB::table('users')->insertGetId([
+                    'bvn' => $corporate['director1bvn'] ?? $corporate['accountno'],
                     'firstname' => $corporate['director1name'] ?? null,
-                    'lastname' => $corporate['director1othername'] ??  null,
+                    'lastname' => $corporate['director1othername'] ?? null,
                     'middle_name' => '',
                     'email' => $corporate['email'] ?? null,
                     'phone_number' => $corporate['phoneno'] ?? null,
                     'address' => $corporate['companyaddress'] ?? null,
-                    'gender' => null,
-                    'date_of_birth' =>  null,
                     'status' => true,
+                    'created_at' => $corporate['created_at'] ?? null,
+                    'updated_at' => $corporate['updated_at'] ?? null,
                 ]);
+
+            } else {
+                $userId = $user->id;
             }
-            $userId = $user->id;
-            //Process the referees
+
             $refereeId = self::processRefereesFromIndividual($corporate);
             $directors = self::processDirectors($corporate);
             $signatories = self::processSignatories($corporate);
-            //Create document to get id
+
+            /*
+            | Company Documents
+            */
+
             $docFields = [
-                'cac'   => FileUploadHelper::buildDocumentPath($corporate['certificateofincorporation'] ?? null),
-                'memart'  => FileUploadHelper::buildDocumentPath($corporate['certifiedmemorandum'] ?? null),
+                'cac' => FileUploadHelper::buildDocumentPath($corporate['certificateofincorporation'] ?? null),
+                'memart' => FileUploadHelper::buildDocumentPath($corporate['certifiedmemorandum'] ?? null),
                 'cac_co7' => FileUploadHelper::buildDocumentPath($corporate['formcac7'] ?? null),
-                'cac_co2'   => FileUploadHelper::buildDocumentPath($corporate['formcac2'] ?? null),
+                'cac_co2' => FileUploadHelper::buildDocumentPath($corporate['formcac2'] ?? null),
                 'declaration_form' => FileUploadHelper::buildDocumentPath($corporate['formcac21'] ?? null),
                 'scuml_certificate' => FileUploadHelper::buildDocumentPath($corporate['scumlcertificate'] ?? null),
                 'board_resolution' => FileUploadHelper::buildDocumentPath($corporate['boardofresolution'] ?? null),
+                'created_at' => $corporate['created_at'] ?? null,
+                'updated_at' => $corporate['updated_at'] ?? null,
             ];
-            $hasDocument = collect($docFields)->filter()->isNotEmpty();
-            $documentId = $hasDocument ? CompanyDocument::create($docFields)->id : null;
 
-            //Create Corporate account
-            CorporateAccount::create([
+            $hasDocument = collect($docFields)->filter()->isNotEmpty();
+
+            $documentId = null;
+
+            if ($hasDocument) {
+                $documentId = DB::table('company_documents')->insertGetId($docFields);
+            }
+
+            DB::table('corporate_accounts')->insert([
                 'user_id' => $userId,
                 'account_type_id' => '3',
                 'account_number' => $corporate['accountno'] ?? null,
                 'company_name' => $corporate['companyname'] ?? null,
-                'registration_number' => $individual['companyregno'] ?? null,
+                'registration_number' => $corporate['companyregno'] ?? null,
                 'company_type_id' => self::companyTypeId($corporate['companytype']) ?? 11,
                 'tin' => $corporate['tin'] ?? null,
                 'status' => $corporate['status'] ?? null,
@@ -307,34 +365,40 @@ class AdminService
                 'phone_number' => $corporate['phoneno'] ?? null,
                 'business_email' => $corporate['email'] ?? null,
                 'city' => null,
-                'lga' =>  null,
+                'lga' => null,
                 'state' => null,
                 'account_officer' => $corporate['referrer'] ?? null,
                 'company_document_id' => $documentId,
-                'referees' => $refereeId ?? null,
                 'debit_card' => false,
-                'directories' => $directors ?? null,
-                'signatories' => $signatories ?? null,
+                'referees' => !empty($refereeId) ? json_encode($refereeId) : null,
+                'directories' => !empty($directors) ? json_encode($directors) : null,
+                'signatories' => !empty($signatories) ? json_encode($signatories) : null,
+                'created_at' => $corporate['created_at'] ?? null,
+                'updated_at' => $corporate['updated_at'] ?? null,
             ]);
-
         }
-
     }
 
     private static function processRefereesFromIndividual(array $individual): array
     {
         $referees = [];
+
         foreach ([1, 2] as $index) {
+
             $ref = [
                 'name'          => $individual["referee{$index}name"] ?? null,
                 'email_address' => $individual["referee{$index}email"] ?? null,
                 'phone_number'  => $individual["referee{$index}phoneno"] ?? null,
                 'mobile_number' => $individual["referee{$index}phoneno"] ?? null,
+                'created_at'    => $individual['created_at'] ?? null,
+                'updated_at'    => $individual['updated_at'] ?? null,
             ];
+
             if (!array_filter($ref)) {
                 continue;
             }
-            $referees[] = Referee::create($ref)->id;
+
+            $referees[] = DB::table('referees')->insertGetId($ref);
         }
 
         return $referees;
@@ -342,7 +406,12 @@ class AdminService
 
     private static function companyTypeId(?string $companyType): ?int
     {
-        return CompanyType::where('name', 'ILIKE', $companyType)
+        if (!$companyType) {
+            return null;
+        }
+
+        return DB::table('company_types')
+            ->where('name', 'ILIKE', $companyType)
             ->value('id');
     }
 
@@ -351,17 +420,22 @@ class AdminService
         $directors = [];
 
         foreach ([1, 2] as $index) {
+
             $director = [
-                'lastname'      => $company["director{$index}name"] ?? null,
-                'firstname'     => $company["director{$index}othername"] ?? null,
-                'bvn'           => $company["director{$index}bvn"] ?? null,
+                'lastname'   => $company["director{$index}name"] ?? null,
+                'firstname'  => $company["director{$index}othername"] ?? null,
+                'bvn'        => $company["director{$index}bvn"] ?? null,
+                'created_at' => $company['created_at'] ?? null,
+                'updated_at' => $company['updated_at'] ?? null,
             ];
 
             if (!array_filter($director)) {
                 continue;
             }
-            $directors[] = Directory::create($director)->id;
+
+            $directors[] = DB::table('directories')->insertGetId($director);
         }
+
         return $directors;
     }
     private static function processSignatories(array $company): array
@@ -377,13 +451,17 @@ class AdminService
                 'passport'           => $company["signatory{$index}passport"] ?? null,
                 'proof_of_address'   => $company["signatory{$index}utilitybill"] ?? null,
                 'specimen_signature' => $company["signatory{$index}signature"] ?? null,
+                'created_at'         => $company['created_at'] ?? null,
+                'updated_at'         => $company['updated_at'] ?? null,
             ];
 
             if (!array_filter($signatory)) {
                 continue;
             }
-            $signatories[] = Signatory::create($signatory)->id;
+
+            $signatories[] = DB::table('signatories')->insertGetId($signatory);
         }
+
         return $signatories;
     }
 }
