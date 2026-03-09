@@ -55,16 +55,15 @@ class ImperialMortgage
     /**
      * @throws CustomException
      */
-    public static function createIndividualAccount(array $data): string
+    public static function createIndividualAccount(array $data, string $residentialAddress): string
     {
         $baseurl = config('services.accountOpening.baseUrl');
-        $residential_address = $data['house_number'].', '.$data['street'].', '.$data['city'].', '.$data['state'];
         $params = [
             'FirstName' => $data['firstname'],
             'LastName' => $data['lastname'],
             'BVN' => $data['bvn'],
             'DOB' => $data['date_of_birth'],
-            'Address' => $residential_address,
+            'Address' => $residentialAddress,
             'AccountType' => $data['account_type'],
             'Gender' => $data['gender'],
             'PhoneNumber' => '0'.substr($data['phone_number'], -10),
