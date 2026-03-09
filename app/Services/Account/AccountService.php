@@ -59,13 +59,14 @@ class AccountService
         //Create user individual account
         $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
         $userData['account_type'] = $accountType->code;
-        $accountNumber = ImperialMortgage::createIndividualAccount($userData);
+        $residential_address = $data['house_number'].', '.$data['street'].', '.$data['city'].', '.$data['state'];
+        $accountNumber = ImperialMortgage::createIndividualAccount($userData, $residential_address);
 
         //Create and assigned user to mobile banking
         $internetBankingRegistration = self::internetBankingAssignment($userData);
 
         //Save Account Data
-        DB::transaction(static function () use ($userData, $accountNumber, $data) {
+        DB::transaction(static function () use ($userData, $accountNumber, $data, $residential_address) {
             //Upload Documents
             $data['document_id'] = Document::create(self::processDocuments($data))->id;
 
@@ -78,7 +79,7 @@ class AccountService
             //Create Individual Account
             $data['account_number'] = $accountNumber;
             $data['user_id'] = $userData['id'];
-            $data['address'] = $data['house_number'].', '.$data['street'].', '.$data['city'].', '.$data['state'];
+            $data['address'] = $residential_address;
             IndividualAccount::create($data);
 
             //Save user card request
