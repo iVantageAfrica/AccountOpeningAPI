@@ -60,7 +60,7 @@ class ImperialMortgage
         $baseurl = config('services.accountOpening.baseUrl');
         $params = [
             'FirstName' => $data['firstname'],
-            'LastName' => $data['lastname'],
+            'LastName' => $data['lastname'] ?? $data['middle_name'] ?? $data['firstname'],
             'BVN' => $data['bvn'],
             'DOB' => $data['date_of_birth'],
             'Address' => $residentialAddress,
@@ -121,16 +121,17 @@ class ImperialMortgage
 
             $responseData = $response->json();
             if (($responseData['status'] ?? null) !== 'success') {
-                Log::info('Imperial Account Opening fail: '. $responseData);
+                Log::info('Imperial Account Opening fail', ['response' => $responseData]);
                 throw new CustomException('Account cannot be create at the moment, Try again later.');
             }
             $accountNumber = $responseData['data']['accountNo'] ?? '';
             if (!$accountNumber) {
-                Log::info('Imperial Account Opening fail: '. $responseData);
+                Log::info('Imperial Account Opening fail', ['response' => $responseData]);
                 throw new CustomException('Account creation is unavailable, Kindly try again.');
             }
             return $accountNumber;
         } catch (Exception $e) {
+            Log::info('An error occurred while creating account', ['error' => $e]);
             throw new CustomException('An error occurred while creating account: ' . $e->getMessage());
         }
     }
