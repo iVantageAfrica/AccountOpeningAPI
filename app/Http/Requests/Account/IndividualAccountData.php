@@ -39,6 +39,7 @@ class IndividualAccountData extends BaseRequest
             'title' => ['nullable', 'string', 'max:10'],
             'mother_maiden_name' => ['required', 'string', 'max:50'],
             'phone_number' => ['nullable', 'string', 'max:30'],
+            'email_address' => ['nullable', 'string', 'email', 'max:100'],
             'employment_status' => ['required','string','max:30'],
             'employer_address' => ['nullable', 'string','max:100'],
             'employer' => ['nullable', 'string','max:100'],

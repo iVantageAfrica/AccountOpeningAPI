@@ -31,7 +31,7 @@ class VerificationService
         dispatch(new OTPJobs($code, $result['UserEmail'], OtpPurpose::BVN_VALIDATION->value, $bvn, $result['UserPhoneNo']));
         return ['emailAddress' => $result['UserEmail'],
                 'phoneNumber' => $result['UserPhoneNo'],
-                'authToken' => EncryptionHelper::secureString(['reference' => $result['UserEmail'], 'code' => $code])];
+                'authToken' => EncryptionHelper::secureString(['reference' => $result['UserEmail'] ?: $result['UserPhoneNo'], 'code' => $code])];
     }
 
 
@@ -45,7 +45,8 @@ class VerificationService
             throw new CustomException('Invalid OTP code.');
         }
         $otpRecord = Otp::whereCode($otpCode)->first();
-        if (!$otpRecord || strcasecmp($otpRecord->email_address, $reference) !== 0) {
+
+        if (!$otpRecord || (strcasecmp($otpRecord->email_address, $reference) !== 0 && strcasecmp($otpRecord->phone_number, $reference) !== 0)) {
             throw new CustomException(message: 'Invalid OTP code.');
         }
         if (!$otpRecord->status) {
@@ -66,11 +67,13 @@ class VerificationService
      * @throws CustomException
      * @throws RandomException
      */
-    public static function requestOTP(string $emailAddress, OtpPurpose $purpose): string
+    public static function requestOTP(string $identifier, OtpPurpose $purpose): string
     {
         $reference = null;
-        $existingOtp = OTP::whereEmailAddress($emailAddress)
-            ->wherePurpose($purpose->value)
+        $existingOtp = OTP::where(static function ($query) use ($identifier) {
+            $query->whereEmailAddress($identifier)
+                ->orWhere('phone_number', $identifier);
+        })->wherePurpose($purpose->value)
             ->where('expires_at', '>', now())
             ->orderByDesc('created_at')
             ->first();
@@ -83,15 +86,24 @@ class VerificationService
             }
             $reference = EncryptionHelper::secureString($existingOtp->reference, 'decrypt');
         }
+
         if ($purpose->value === OtpPurpose::BVN_VALIDATION->value) {
-            $reference = EncryptionHelper::secureString(OTP::whereEmailAddress($emailAddress)
+            $reference = EncryptionHelper::secureString(
+                OTP::where(static function ($query) use ($identifier) {
+                    $query->whereEmailAddress($identifier)
+                        ->orWhere('phone_number', $identifier);
+                })
                 ->wherePurpose(OtpPurpose::BVN_VALIDATION->value)
                 ->latest()
-                ->value('reference'), 'decrypt');
+                ->value('reference'),
+                'decrypt'
+            );
         }
+
         $otpCode = generateRandomNumber(6);
-        OTPJobs::dispatch($otpCode, $emailAddress, $purpose->value, $reference);
-        return EncryptionHelper::secureString(['reference' => $emailAddress, 'code' => $otpCode]);
+        ['email' => $email, 'phone' => $phone] = self::resolveIdentifier($identifier);
+        OTPJobs::dispatch($otpCode, $email, $purpose->value, $reference, $phone);
+        return EncryptionHelper::secureString(['reference' => $identifier, 'code' => $otpCode]);
     }
 
 
@@ -129,5 +141,12 @@ class VerificationService
     }
 
 
+    private static function resolveIdentifier($identifier): array
+    {
+        return [
+            'email' => filter_var($identifier, FILTER_VALIDATE_EMAIL) ? $identifier : '',
+            'phone' => filter_var($identifier, FILTER_VALIDATE_EMAIL) ? '' : $identifier,
+        ];
+    }
 
 }

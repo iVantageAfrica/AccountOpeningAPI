@@ -58,9 +58,9 @@ class UtilityController extends Controller
      */
     public function requestOtp(Request $request): JsonResponse
     {
-        ['emailAddress' => $emailAddress, 'purpose' => $purpose] = QueryParamValidator::getRequiredParams($request, ['emailAddress', 'purpose']);
+        ['identifier' => $identifier, 'purpose' => $purpose] = QueryParamValidator::getRequiredParams($request, ['identifier', 'purpose']);
         $purpose = $purpose === 'BVN' ? OtpPurpose::BVN_VALIDATION : OtpPurpose::RESET_PASSWORD;
-        $verificationToken = VerificationService::requestOTP(strtolower($emailAddress), $purpose);
+        $verificationToken = VerificationService::requestOTP(strtolower($identifier), $purpose);
         return $this->successDataResponse(data: $verificationToken);
     }
 
