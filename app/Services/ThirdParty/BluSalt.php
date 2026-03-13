@@ -40,7 +40,7 @@ class BluSalt
                         'BVN' => $bvnNumber,
                         'marital_status' => $responseData['results']['personal_info']['marital_status'] ?? '',
                         'gender' => $responseData['results']['personal_info']['gender'] ?? '',
-                        'surname' => $responseData['results']['personal_info']['lastname'] ?? '',
+                        'surname' => $responseData['results']['personal_info']['last_name'] ?? '',
                         'middle_name' => $responseData['results']['personal_info']['middle_name'] ?? '',
                         'first_name' => $responseData['results']['personal_info']['first_name'] ?? '',
                         'state_of_origin' => $responseData['results']['personal_info']['state_of_origin'] ?? '',
