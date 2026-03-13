@@ -33,13 +33,14 @@ class BluSalt
             $responseData = $response->json();
             return match ($responseData['status_code'] ?? 500) {
                 200 => (static function () use ($responseData, $bvnNumber) {
+                    $gender = strtolower(trim((string)($responseData['results']['personal_info']['gender'] ?? '')));
                     $resultMap = [
                         'SeqRef' => $responseData['results']['request_reference'] ?? '',
                         'UserPhoneNo' => $responseData['results']['personal_info']['phone_number'] ?? $responseData['results']['personal_info']['phone_number_2'] ?? '',
                         'UserEmail' => $responseData['results']['personal_info']['email'] ?? '',
                         'BVN' => $bvnNumber,
                         'marital_status' => $responseData['results']['personal_info']['marital_status'] ?? '',
-                        'gender' => $responseData['results']['personal_info']['gender'] ?? '',
+                        'gender' => $gender ? ($gender === 'male' ? 'Male' : 'Female') : '',
                         'surname' => $responseData['results']['personal_info']['last_name'] ?? '',
                         'middle_name' => $responseData['results']['personal_info']['middle_name'] ?? '',
                         'first_name' => $responseData['results']['personal_info']['first_name'] ?? '',

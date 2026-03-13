@@ -121,17 +121,17 @@ class ImperialMortgage
 
             $responseData = $response->json();
             if (($responseData['status'] ?? null) !== 'success') {
-                Log::info('Imperial Account Opening fail', ['response' => $responseData]);
+                Log::info('Imperial Account Opening fail', ['response' => $responseData, 'request' => $params]);
                 throw new CustomException('Account cannot be create at the moment, Try again later.');
             }
             $accountNumber = $responseData['data']['accountNo'] ?? '';
             if (!$accountNumber) {
-                Log::info('Imperial Account Opening fail', ['response' => $responseData]);
+                Log::info('Imperial Account Opening fail', ['response' => $responseData, 'request' => $params]);
                 throw new CustomException('Account creation is unavailable, Kindly try again.');
             }
             return $accountNumber;
         } catch (Exception $e) {
-            Log::info('An error occurred while creating account', ['error' => $e]);
+            Log::info('An error occurred while creating account', ['error' => $e, 'request' => $params]);
             throw new CustomException('An error occurred while creating account: ' . $e->getMessage());
         }
     }
@@ -169,13 +169,13 @@ class ImperialMortgage
 
             $responseData = $response->json();
             if (($responseData['success'] ?? false) !== true) {
-                Log::warning('Imperial Mobile Registration API failed', ['response' => $responseData,]);
+                Log::warning('Imperial Mobile Registration API failed', ['response' => $responseData, 'request' => $payload]);
                 return false;
             }
             return true;
 
         } catch (Throwable $e) {
-            Log::error('Imperial Mobile Registration Exception', ['error' => $e->getMessage(),]);
+            Log::error('Imperial Mobile Registration Exception', ['error' => $e->getMessage(), 'request' => $payload]);
             return false;
         }
     }
