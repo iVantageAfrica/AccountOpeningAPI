@@ -60,7 +60,7 @@ class ImperialMortgage
         $baseurl = config('services.accountOpening.baseUrl');
         $params = [
             'FirstName' => $data['firstname'],
-            'LastName' => $data['lastname'] ?? $data['middle_name'] ?? $data['firstname'],
+            'LastName' => $data['lastname'],
             'BVN' => $data['bvn'],
             'DOB' => $data['date_of_birth'],
             'Address' => $residentialAddress,
