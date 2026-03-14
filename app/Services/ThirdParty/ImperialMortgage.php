@@ -65,7 +65,7 @@ class ImperialMortgage
             'DOB' => $data['date_of_birth'],
             'Address' => $residentialAddress,
             'AccountType' => $data['account_type'],
-            'Gender' => $data['gender'],
+            'Gender' => strtolower($data['gender']) === 'male' ? 'M' : 'F',
             'PhoneNumber' => '0'.substr($data['phone_number'], -10),
             'Email' => $data['email'],
         ];
