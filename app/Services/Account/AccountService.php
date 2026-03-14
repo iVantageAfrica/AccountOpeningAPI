@@ -58,9 +58,7 @@ class AccountService
         if (empty($userEmail) && empty($data['email_address'])) {
             throw new CustomException('Email address is required to create an individual account', 400);
         }
-        if (empty($userEmail)) {
-            $userModel->update(['email' => $data['email_address']]);
-        }
+        $userModel->update(['email' => $data['email_address']]);
         self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'INDIVIDUAL');
 
         //Create user individual account
