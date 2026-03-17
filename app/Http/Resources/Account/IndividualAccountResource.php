@@ -35,9 +35,11 @@ class IndividualAccountResource extends JsonResource
             'accountNumber' => $this->account_number ?? null,
             'motherMaidenName' => $this->mother_maiden_name ?? null,
             'status' => $this->status ?? null,
+            'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
         ];
-        $userData = (new UserResource($this->user))->resolve();
-        unset($userData['id']);
+        $userData = collect((new UserResource($this->user))->resolve())
+            ->except(['id', 'createdAt'])
+            ->toArray();
         $basic = array_merge($basic, $userData);
 
         if (!$this->fullDetails) {
@@ -63,7 +65,6 @@ class IndividualAccountResource extends JsonResource
             'referrer' => $this->referrer ?? null,
             'accountOfficer' => $this->account_officer ?? null,
             'occupation' => $this->occupation ?? null,
-            'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
             'documents' => DocumentResource::make($this->whenLoaded('document')),
             'referee' => RefereeResource::collection($this->getRelationValue('referees') ?? []),
         ]);

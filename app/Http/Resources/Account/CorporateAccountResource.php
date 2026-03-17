@@ -48,8 +48,9 @@ class CorporateAccountResource extends JsonResource
             'status' => $this->status ?? null,
             'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
         ];
-        $userData = (new UserResource($this->user))->resolve();
-        unset($userData['id']);
+        $userData = collect((new UserResource($this->user))->resolve())
+            ->except(['id', 'createdAt'])
+            ->toArray();
         $basic = array_merge($basic, $userData);
 
         if (!$this->fullDetails) {
