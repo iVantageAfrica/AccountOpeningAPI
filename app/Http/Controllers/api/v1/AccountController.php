@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Account\AccountDocumentSubmission;
 use App\Http\Requests\Account\AccountReferenceSubmissionData;
 use App\Http\Requests\Account\BankAccountReferenceData;
 use App\Http\Requests\Account\CompanyDocumentData;
@@ -89,5 +90,12 @@ class AccountController extends Controller
         $data = $request->validated();
         AccountService::updateDirectorySignatory($data);
         return $this->successResponse(message: 'Documents updated successfully.');
+    }
+
+    public function accountDocumentAddition(AccountDocumentSubmission $request): JsonResponse
+    {
+        $data = $request->validated();
+        AccountService::updateAccountInformation($data);
+        return $this->successResponse(message: 'Document added successfully.');
     }
 }

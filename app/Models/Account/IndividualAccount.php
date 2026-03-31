@@ -7,6 +7,7 @@ use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -92,9 +93,9 @@ class IndividualAccount extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function document(): BelongsTo
+    public function document(): HasMany
     {
-        return $this->belongsTo(Document::class);
+        return $this->hasMany(Document::class, 'account_number', 'account_number');
     }
 
     protected $casts = [

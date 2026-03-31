@@ -72,9 +72,6 @@ class AccountService
 
         //Save Account Data
         DB::transaction(static function () use ($userData, $accountNumber, $data, $residential_address) {
-            //Upload Documents
-            $data['document_id'] = Document::create(self::processDocuments($data))->id;
-
             //Create user bank referee
             $data['referees'] = [];
             if ((int) $data['account_type_id'] === 1 && !empty($data['referee'])) {
@@ -86,6 +83,9 @@ class AccountService
             $data['user_id'] = $userData['id'];
             $data['address'] = $residential_address;
             IndividualAccount::create($data);
+
+            //Upload Documents
+            Document::create(self::processDocuments($data));
 
             //Save user card request
             if ($data['debit_card']) {
@@ -340,6 +340,13 @@ class AccountService
         }
     }
 
+
+    public static function updateAccountInformation(array $data): bool
+    {
+        Document::create(self::processDocuments($data));
+        return true;
+    }
+
     private static function processReferees(array $referees): array
     {
         return collect($referees)->map(function ($referee) {
@@ -360,6 +367,7 @@ class AccountService
             'utility_bill' => FileUploadHelper::uploadFile($data['utility_bill']),
             'passport'     => FileUploadHelper::uploadFile($data['passport']),
             'name' => $data['name'] ?? '',
+            'account_number' => $data['account_number'] ?? '',
         ];
     }
 
@@ -447,4 +455,6 @@ class AccountService
                 'password' => $internetBankingReg ? $password : '',
             ];
     }
+
+
 }

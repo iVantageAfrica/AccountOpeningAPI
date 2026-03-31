@@ -20,6 +20,7 @@ class DocumentResource extends JsonResource
             'utilityBill' => $this->utility_bill ?? null,
             'passport' => $this->passport ?? null,
             'name' => $this->name ?? null,
+            'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
         ];
     }
 }

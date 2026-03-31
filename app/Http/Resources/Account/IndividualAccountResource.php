@@ -65,7 +65,7 @@ class IndividualAccountResource extends JsonResource
             'referrer' => $this->referrer ?? null,
             'accountOfficer' => $this->account_officer ?? null,
             'occupation' => $this->occupation ?? null,
-            'documents' => DocumentResource::make($this->whenLoaded('document')),
+            'documents' => DocumentResource::collection($this->whenLoaded('document')),
             'referee' => RefereeResource::collection($this->getRelationValue('referees') ?? []),
         ]);
     }

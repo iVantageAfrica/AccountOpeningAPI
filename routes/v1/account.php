@@ -12,4 +12,6 @@ Route::controller(AccountController::class)->group(function () {
 
     Route::post('submit-corporate-account-document', 'submitCorporateAccountCompanyDocument');
     Route::post('update-directory-signatory-information', 'updateDirectorySignatoryInformation');
+
+    Route::post('account-document-addition', 'accountDocumentAddition');
 });
