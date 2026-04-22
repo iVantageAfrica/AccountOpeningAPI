@@ -14,6 +14,7 @@ use App\Models\Account\DebitCardRequest;
 use App\Models\Account\Directory;
 use App\Models\Account\Document;
 use App\Models\Account\IndividualAccount;
+use App\Models\Account\IndividualAccountUpdate;
 use App\Models\Account\Referee;
 use App\Models\Account\Signatory;
 use App\Models\User;
@@ -341,11 +342,26 @@ class AccountService
     }
 
 
-    public static function updateAccountInformation(array $data): bool
+    public static function accountDocumentAddition(array $data): bool
     {
         Document::create(self::processDocuments($data));
         return true;
     }
+
+    /**
+     * @throws CustomException
+     */
+    public static function updateIndividualAccount(array $data): array
+    {
+        $account = IndividualAccount::whereAccountNumber($data['account_number'])->first();
+        if (!$account) {
+            throw new CustomException('Account not found', 404);
+        }
+        IndividualAccountUpdate::create($data);
+        return $data;
+    }
+
+
 
     private static function processReferees(array $referees): array
     {

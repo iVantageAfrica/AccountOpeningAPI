@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AccountUpdateLinkRequest;
 use App\Http\Requests\Admin\AuthenticateRequest;
 use App\Http\Resources\Account\CorporateAccountResource;
 use App\Http\Resources\Account\DebitCardResource;
@@ -15,7 +16,6 @@ use App\Traits\JsonResponseTrait;
 use App\Utils\QueryParamValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use JsonException;
 use Random\RandomException;
 
 class AdminController extends Controller
@@ -111,11 +111,12 @@ class AdminController extends Controller
     }
 
     /**
-     * @throws JsonException
+     * @throws RandomException
      */
-    public function dataLink(): JsonResponse
+    public function accountUpdateLink(AccountUpdateLinkRequest $request): JsonResponse
     {
-        AdminService::dataLink();
-        return $this->successResponse();
+        $data = $request->validated();
+        AdminService::accountUpdateLinkNotification($data);
+        return $this->successResponse(message: 'Account update link sent successfully.');
     }
 }

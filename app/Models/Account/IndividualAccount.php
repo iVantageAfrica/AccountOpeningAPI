@@ -98,6 +98,11 @@ class IndividualAccount extends Model
         return $this->hasMany(Document::class, 'account_number', 'account_number');
     }
 
+    public function accountUpdates(): HasMany
+    {
+        return $this->hasMany(IndividualAccountUpdate::class, 'account_number', 'account_number');
+    }
+
     protected $casts = [
         'referees' => 'array',
         'debit_card' => 'boolean',

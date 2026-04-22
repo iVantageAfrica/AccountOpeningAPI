@@ -16,13 +16,13 @@ Route::controller(AdminController::class)->group(function () {
 
         Route::get('fetch-individual-account', 'fetchIndividualAccount');
         Route::get('fetch-corporate-account', 'fetchCorporateAccount');
-
         Route::get('customer-summary', 'customerSummary');
         Route::get('savings-account-summary', 'savingsAccountSummary');
         Route::get('current-account-summary', 'currentAccountSummary');
         Route::get('corporate-account-summary', 'corporateAccountSummary');
         Route::get('pos-account-summary', 'POSAccountSummary');
-
         Route::get('debit-card-requests', 'listDebitCardRequest');
+
+        Route::post('account-update-link', 'accountUpdateLink');
     });
 });

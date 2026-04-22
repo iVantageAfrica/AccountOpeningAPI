@@ -2,6 +2,7 @@
 
 namespace App\Services\Utility;
 
+use App\Enum\AccountNotificationEnum;
 use App\Enum\OtpPurpose;
 use App\Helpers\EncryptionHelper;
 use App\Models\User;
@@ -66,6 +67,13 @@ class MessageService
     {
         $subject = $data['type'] === 'signatory' ? 'Request for Verification of Account Signatories' : 'Account Director Confirmation Request';
         self::mailMessage($data['email'], $subject, 'emails.signatoryDirectory', $data);
+    }
+
+    public static function accountNotificationMessage(array $data): void
+    {
+        $view = AccountNotificationEnum::from($data['notificationType'])->view();
+        $subject = AccountNotificationEnum::from($data['notificationType'])->subject();
+        self::mailMessage($data['email'], $subject, $view, $data);
     }
 
     public static function mailMessage(string $emailAddress, string $subject, string $viewName, array $data = []): void

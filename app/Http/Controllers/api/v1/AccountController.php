@@ -10,6 +10,7 @@ use App\Http\Requests\Account\BankAccountReferenceData;
 use App\Http\Requests\Account\CompanyDocumentData;
 use App\Http\Requests\Account\CorporateAccountData;
 use App\Http\Requests\Account\IndividualAccountData;
+use App\Http\Requests\Account\IndividualAccountUpdateData;
 use App\Http\Requests\Account\UpdateBankAccountReferenceData;
 use App\Http\Requests\Account\UpdateDirectorySignatoryData;
 use App\Services\Account\AccountService;
@@ -95,7 +96,17 @@ class AccountController extends Controller
     public function accountDocumentAddition(AccountDocumentSubmission $request): JsonResponse
     {
         $data = $request->validated();
-        AccountService::updateAccountInformation($data);
+        AccountService::accountDocumentAddition($data);
         return $this->successResponse(message: 'Document added successfully.');
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function individualAccountUpdate(IndividualAccountUpdateData $request): JsonResponse
+    {
+        $data = $request->validated();
+        AccountService::updateIndividualAccount($data);
+        return $this->successResponse(message: 'Account information updated successfully.');
     }
 }

@@ -14,4 +14,5 @@ Route::controller(AccountController::class)->group(function () {
     Route::post('update-directory-signatory-information', 'updateDirectorySignatoryInformation');
 
     Route::post('account-document-addition', 'accountDocumentAddition');
+    Route::post('individual-account-update', 'individualAccountUpdate');
 });

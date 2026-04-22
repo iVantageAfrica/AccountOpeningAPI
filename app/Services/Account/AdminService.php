@@ -2,7 +2,9 @@
 
 namespace App\Services\Account;
 
+use App\Enum\AccountNotificationEnum;
 use App\Exceptions\CustomException;
+use App\Helpers\EncryptionHelper;
 use App\Helpers\FileUploadHelper;
 use App\Models\Account\CorporateAccount;
 use App\Models\Account\DebitCardRequest;
@@ -13,6 +15,7 @@ use App\Models\Account\Signatory;
 use App\Models\Admin;
 use App\Models\User;
 use App\Services\Utility\JWTTokenService;
+use App\Services\Utility\MessageService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -115,7 +118,7 @@ class AdminService
     public static function fetchIndividualAccount(string|int $accountNumber): Builder|IndividualAccount|null
     {
         $accountDetails = IndividualAccount::whereAccountNumber($accountNumber)
-            ->with(['user', 'document'])
+            ->with(['user', 'document', 'accountUpdates'])
             ->first();
 
         if (!$accountDetails) {
@@ -148,11 +151,45 @@ class AdminService
         return $accountDetails;
     }
 
+
+
     public static function listCardsRequest(): Collection
     {
         return DebitCardRequest::with(['user', 'accountType'])
             ->orderByDesc('id')
             ->get();
+    }
+
+    /**
+     * @throws RandomException
+     */
+    public static function accountUpdateLinkNotification($data): bool
+    {
+        $isIndividual = in_array($data['account_type_id'], ['1', '2'], true);
+        $accountData = $isIndividual
+            ? IndividualAccount::whereAccountNumber($data['account_number'])->first()
+            : CorporateAccount::whereAccountNumber($data['account_number'])->first();
+
+        $accountName = $isIndividual
+            ? $accountData?->user?->firstname.' '.$accountData?->user?->lastname
+            : $accountData?->company_name;
+
+        $query = http_build_query([
+            'acc' => EncryptionHelper::secureTestString($data['account_number']),
+            'ty' => EncryptionHelper::secureTestString($data['account_type_id']),
+            'accName' => EncryptionHelper::secureTestString($accountName)]);
+        $paths = [
+            AccountNotificationEnum::ACCOUNT_UPDATE->value => '/accounts/update',
+            AccountNotificationEnum::DOCUMENT_UPDATE->value => '/verification/account-document-submission',
+            AccountNotificationEnum::BANK_ACCOUNT_REFEREE_UPDATE->value => '/verification/reference-creation',
+        ];
+        MessageService::accountNotificationMessage([
+            'email' => $accountData?->user?->email,
+            'name' => $accountName,
+            'notificationType' => $data['notification_type'],
+            'url' => config('app.app_frontend_url') . $paths[$data['notification_type']] . '?' . $query,
+        ]);
+        return true;
     }
 
     /**

@@ -47,6 +47,7 @@ class IndividualAccountResource extends JsonResource
         }
 
         return array_merge($basic, [
+            'accountTypeId' => $this->account_type_id ?? null,
             'mobilePhoneNumber' => $this->phone_number ?? null,
             'lga' => $this->lga ?? null,
             'origin' => $this->origin ?? null,
@@ -67,6 +68,7 @@ class IndividualAccountResource extends JsonResource
             'occupation' => $this->occupation ?? null,
             'documents' => DocumentResource::collection($this->whenLoaded('document')),
             'referee' => RefereeResource::collection($this->getRelationValue('referees') ?? []),
+            'accountUpdates' => IndividualAccountUpdateResource::collection($this->whenLoaded('accountUpdates')),
         ]);
     }
 
