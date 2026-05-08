@@ -55,12 +55,15 @@ class AccountService
         //Get user account data from user using the BVN and Check if user has such account
         $userModel = User::whereBvn($data['bvn'])->firstOrFail();
         $userData = $userModel->toArray();
-        $userEmail = $userData['email'] ?? '';
-        if (empty($userEmail) && empty($data['email_address'])) {
+        if (empty($userData['email']) && empty($data['email_address'])) {
             throw new CustomException('Email address is required to create an individual account', 400);
         }
-        $userModel->update(['email' => $data['email_address']]);
         self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'INDIVIDUAL');
+
+        //Revalidate to use existing email on the bvn or new email address user want
+        $emailAddress = empty($data['email_address']) ? $userData['email'] : $data['email_address'];
+        $userData['email'] = $emailAddress;
+        $userModel->update(['email' => $emailAddress]);
 
         //Create user individual account
         $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
