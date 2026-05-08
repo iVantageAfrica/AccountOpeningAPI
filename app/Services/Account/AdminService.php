@@ -181,7 +181,7 @@ class AdminService
         $paths = [
             AccountNotificationEnum::ACCOUNT_UPDATE->value => '/accounts/update',
             AccountNotificationEnum::DOCUMENT_UPDATE->value => '/verification/account-document-submission',
-            AccountNotificationEnum::BANK_ACCOUNT_REFEREE_UPDATE->value => '/verification/reference-creation',
+            AccountNotificationEnum::BANK_ACCOUNT_REFEREE_UPDATE->value => '/verification/account-reference',
         ];
         MessageService::accountNotificationMessage([
             'email' => $accountData?->user?->email,
