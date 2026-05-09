@@ -4,6 +4,7 @@ namespace App\Models\Account;
 
 use App\Models\User;
 use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,40 +43,40 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Document|null $document
  * @property-read User $user
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereAccountNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereAccountTypeId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereAddress($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereDebitCard($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereDocumentId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereEmployer($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereEmployerAddress($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereAccountOfficer($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereEmploymentStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereMaritalStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereOrigin($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereLga($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereMotherMaidenName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereNextOfKinAddress($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereNextOfKinName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereNextOfKinPhoneNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereNextOfKinRelationship($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereOccupation($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount wherePhoneNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereReferees($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereReferrer($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|IndividualAccount withoutTrashed()
+ * @method static Builder<static>|IndividualAccount newModelQuery()
+ * @method static Builder<static>|IndividualAccount newQuery()
+ * @method static Builder<static>|IndividualAccount onlyTrashed()
+ * @method static Builder<static>|IndividualAccount query()
+ * @method static Builder<static>|IndividualAccount whereAccountNumber($value)
+ * @method static Builder<static>|IndividualAccount whereAccountTypeId($value)
+ * @method static Builder<static>|IndividualAccount whereAddress($value)
+ * @method static Builder<static>|IndividualAccount whereCreatedAt($value)
+ * @method static Builder<static>|IndividualAccount whereDebitCard($value)
+ * @method static Builder<static>|IndividualAccount whereDeletedAt($value)
+ * @method static Builder<static>|IndividualAccount whereDocumentId($value)
+ * @method static Builder<static>|IndividualAccount whereEmployer($value)
+ * @method static Builder<static>|IndividualAccount whereEmployerAddress($value)
+ * @method static Builder<static>|IndividualAccount whereAccountOfficer($value)
+ * @method static Builder<static>|IndividualAccount whereEmploymentStatus($value)
+ * @method static Builder<static>|IndividualAccount whereId($value)
+ * @method static Builder<static>|IndividualAccount whereMaritalStatus($value)
+ * @method static Builder<static>|IndividualAccount whereOrigin($value)
+ * @method static Builder<static>|IndividualAccount whereLga($value)
+ * @method static Builder<static>|IndividualAccount whereMotherMaidenName($value)
+ * @method static Builder<static>|IndividualAccount whereNextOfKinAddress($value)
+ * @method static Builder<static>|IndividualAccount whereNextOfKinName($value)
+ * @method static Builder<static>|IndividualAccount whereNextOfKinPhoneNumber($value)
+ * @method static Builder<static>|IndividualAccount whereNextOfKinRelationship($value)
+ * @method static Builder<static>|IndividualAccount whereOccupation($value)
+ * @method static Builder<static>|IndividualAccount wherePhoneNumber($value)
+ * @method static Builder<static>|IndividualAccount whereReferees($value)
+ * @method static Builder<static>|IndividualAccount whereReferrer($value)
+ * @method static Builder<static>|IndividualAccount whereStatus($value)
+ * @method static Builder<static>|IndividualAccount whereTitle($value)
+ * @method static Builder<static>|IndividualAccount whereUpdatedAt($value)
+ * @method static Builder<static>|IndividualAccount whereUserId($value)
+ * @method static Builder<static>|IndividualAccount withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|IndividualAccount withoutTrashed()
  * @mixin Eloquent
  */
 class IndividualAccount extends Model
@@ -107,4 +108,15 @@ class IndividualAccount extends Model
         'referees' => 'array',
         'debit_card' => 'boolean',
     ];
+
+    public function getAccountTypeNameAttribute(): string
+    {
+        return match($this->account_type_id) {
+            1 => 'Current Account',
+            2 => 'Savings Account',
+            3 => 'Corporate Account',
+            4 => 'POS Merchant Account',
+            default => 'Savings',
+        };
+    }
 }

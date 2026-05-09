@@ -18,7 +18,7 @@
 
 
             <a href="{{ $url }}" style=" color:#DE4F01; padding-left: 30px;">
-                {{ Str::limit($url, 60) }}
+                {{ Str::limit($url, 90) }}
             </a>
         </p>
 

@@ -165,6 +165,7 @@ class AdminService
      */
     public static function accountUpdateLinkNotification($data): bool
     {
+
         $isIndividual = in_array($data['account_type_id'], ['1', '2'], true);
         $accountData = $isIndividual
             ? IndividualAccount::whereAccountNumber($data['account_number'])->first()
@@ -183,6 +184,7 @@ class AdminService
             AccountNotificationEnum::DOCUMENT_UPDATE->value => '/verification/account-document-submission',
             AccountNotificationEnum::BANK_ACCOUNT_REFEREE_UPDATE->value => '/verification/account-reference',
         ];
+
         MessageService::accountNotificationMessage([
             'email' => $accountData?->user?->email,
             'name' => $accountName,

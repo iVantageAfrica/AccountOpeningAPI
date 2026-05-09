@@ -6,8 +6,10 @@ use App\Exceptions\CustomException;
 use App\Helpers\EncryptionHelper;
 use App\Helpers\FileUploadHelper;
 use App\Jobs\AccountNotificationJob;
+use App\Jobs\AccountRefereeSubmissionNotificationJob;
 use App\Jobs\AccountReferenceJob;
 use App\Jobs\SignatoryDirectoryJob;
+use App\Jobs\SupportAccountNotificationJob;
 use App\Models\Account\CompanyDocument;
 use App\Models\Account\CorporateAccount;
 use App\Models\Account\DebitCardRequest;
@@ -110,6 +112,7 @@ class AccountService
             null,
             null
         );
+        SupportAccountNotificationJob::dispatch($accountNumber, $accountType->id);
 
         $userModel->update(['status' => true]);
         return $accountNumber;
@@ -248,7 +251,7 @@ class AccountService
         if ($refereeData->is_submitted) {
             throw new CustomException('Referee is already submitted, Link is no longer accepted', 409);
         }
-        return $refereeData->update([
+        $refereeData->update([
             'account_name' => $data['account_name'],
             'account_type' => $data['account_type'],
             'account_number' => $data['account_number'],
@@ -260,6 +263,8 @@ class AccountService
             'signature' => isset($data['signature']) && $data['signature'] instanceof UploadedFile
                 ? FileUploadHelper::uploadFile($data['signature']) : null,
         ]);
+        AccountRefereeSubmissionNotificationJob::dispatch($refereeData->id);
+        return true;
     }
 
     /**

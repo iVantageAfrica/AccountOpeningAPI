@@ -73,3 +73,17 @@ if (!function_exists('generateCustomId')) {
         return strtoupper($prefix) . date('y-mdH-is');
     }
 }
+
+if (!function_exists('isImageFile')) {
+
+    function isImageFile($file): bool
+    {
+        if (!$file) {
+            return false;
+        }
+
+        return preg_match('/\.(jpg|jpeg|png)$/i', $file);
+
+    }
+
+}

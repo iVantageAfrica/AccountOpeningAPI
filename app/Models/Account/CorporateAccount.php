@@ -102,4 +102,15 @@ class CorporateAccount extends Model
     {
         return $this->belongsTo(CompanyDocument::class, 'company_document_id');
     }
+
+    public function getAccountTypeNameAttribute(): string
+    {
+        return match($this->account_type_id) {
+            1 => 'Current Account',
+            2 => 'Savings Account',
+            3 => 'Corporate Account',
+            4 => 'POS Merchant Account',
+            default => 'Savings',
+        };
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Services\Utility;
 
 use App\Enum\AccountNotificationEnum;
 use App\Enum\OtpPurpose;
+use App\Enum\SupportNotificationEnum;
 use App\Helpers\EncryptionHelper;
 use App\Models\User;
 use App\Models\Utility\Otp;
@@ -17,7 +18,7 @@ class MessageService
     /**
      * @throws RandomException
      */
-    public static function createOTPCode(string $code, string $emailAddress, string $purpose, string $reference = null, string $phoneNumber = null): void
+    public static function createOTPCode(string $code, string $emailAddress, string $purpose, ?string $reference = null, ?string $phoneNumber = null): void
     {
         Otp::create(
             [
@@ -76,6 +77,13 @@ class MessageService
         self::mailMessage($data['email'], $subject, $view, $data);
     }
 
+    public static function supportNotificationMessage(array $data): void
+    {
+        $view = SupportNotificationEnum::from($data['notificationType'])->view();
+        $subject = SupportNotificationEnum::from($data['notificationType'])->subject();
+        self::mailMessageWithAttachment(config('mail.customer_support_mail'), $subject, $view, $data, $data['attachments'] ?? []);
+    }
+
     public static function mailMessage(string $emailAddress, string $subject, string $viewName, array $data = []): void
     {
         Mail::send(
@@ -89,4 +97,23 @@ class MessageService
         );
     }
 
+    public static function mailMessageWithAttachment(string $emailAddress, string $subject, string $viewName, array $data = [], array $attachments = []): void
+    {
+        Mail::send(
+            $viewName,
+            $data,
+            static function ($message) use ($emailAddress, $subject, $attachments) {
+                $message->from(config('mail.from.address'), config('mail.from.name'))
+                    ->to($emailAddress)
+                    ->subject($subject);
+                foreach ($attachments as $attachment) {
+                    $message->attachData(
+                        $attachment['data'],
+                        $attachment['name'],
+                        ['mime' => $attachment['mime'] ?? 'application/pdf']
+                    );
+                }
+            }
+        );
+    }
 }

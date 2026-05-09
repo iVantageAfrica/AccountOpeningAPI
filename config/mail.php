@@ -115,4 +115,6 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'customer_support_mail' => env('CUSTOMER_SUPPORT_MAIL', 'customermanagement@imperialmortgagebank.com'),
+
 ];

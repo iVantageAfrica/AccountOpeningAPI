@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Account\IndividualAccount;
 use App\Traits\DateScope;
 use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -32,33 +33,33 @@ use Illuminate\Support\Str;
  * @property-read IndividualAccount|null $currentAccount
  * @property-read IndividualAccount|null $savingsAccount
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User lastMonth()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User lastWeek()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User thisMonth()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User thisWeek()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User today()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereAddress($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereBvn($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereDateOfBirth($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereFirstname($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereGender($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLastname($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereMiddleName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereNin($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePhoneNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User yesterday()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereStatus($value)
+ * @method static Builder<static>|User lastMonth()
+ * @method static Builder<static>|User lastWeek()
+ * @method static Builder<static>|User newModelQuery()
+ * @method static Builder<static>|User newQuery()
+ * @method static Builder<static>|User onlyTrashed()
+ * @method static Builder<static>|User query()
+ * @method static Builder<static>|User thisMonth()
+ * @method static Builder<static>|User thisWeek()
+ * @method static Builder<static>|User today()
+ * @method static Builder<static>|User whereAddress($value)
+ * @method static Builder<static>|User whereBvn($value)
+ * @method static Builder<static>|User whereCreatedAt($value)
+ * @method static Builder<static>|User whereDateOfBirth($value)
+ * @method static Builder<static>|User whereDeletedAt($value)
+ * @method static Builder<static>|User whereEmail($value)
+ * @method static Builder<static>|User whereFirstname($value)
+ * @method static Builder<static>|User whereGender($value)
+ * @method static Builder<static>|User whereId($value)
+ * @method static Builder<static>|User whereLastname($value)
+ * @method static Builder<static>|User whereMiddleName($value)
+ * @method static Builder<static>|User whereNin($value)
+ * @method static Builder<static>|User wherePhoneNumber($value)
+ * @method static Builder<static>|User whereUpdatedAt($value)
+ * @method static Builder<static>|User withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|User withoutTrashed()
+ * @method static Builder<static>|User yesterday()
+ * @method static Builder<static>|User whereStatus($value)
  * @mixin Eloquent
  */
 class User extends Model

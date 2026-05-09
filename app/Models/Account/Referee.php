@@ -3,6 +3,7 @@
 namespace App\Models\Account;
 
 use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -24,25 +25,25 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $submitted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereAccountName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereAccountNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereAccountType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereBankName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereComment($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereEmailAddress($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereIsSubmitted($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereKnownPeriod($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereMobileNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee wherePhoneNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereSignature($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereSubmittedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Referee whereUpdatedAt($value)
+ * @method static Builder<static>|Referee newModelQuery()
+ * @method static Builder<static>|Referee newQuery()
+ * @method static Builder<static>|Referee query()
+ * @method static Builder<static>|Referee whereAccountName($value)
+ * @method static Builder<static>|Referee whereAccountNumber($value)
+ * @method static Builder<static>|Referee whereAccountType($value)
+ * @method static Builder<static>|Referee whereBankName($value)
+ * @method static Builder<static>|Referee whereComment($value)
+ * @method static Builder<static>|Referee whereCreatedAt($value)
+ * @method static Builder<static>|Referee whereEmailAddress($value)
+ * @method static Builder<static>|Referee whereId($value)
+ * @method static Builder<static>|Referee whereIsSubmitted($value)
+ * @method static Builder<static>|Referee whereKnownPeriod($value)
+ * @method static Builder<static>|Referee whereMobileNumber($value)
+ * @method static Builder<static>|Referee whereName($value)
+ * @method static Builder<static>|Referee wherePhoneNumber($value)
+ * @method static Builder<static>|Referee whereSignature($value)
+ * @method static Builder<static>|Referee whereSubmittedAt($value)
+ * @method static Builder<static>|Referee whereUpdatedAt($value)
  * @mixin Eloquent
  */
 class Referee extends Model
