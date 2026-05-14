@@ -35,6 +35,7 @@ class IndividualAccountData extends BaseRequest
     {
         return [
             'bvn' => ['required', 'string', Rule::exists(User::class, 'bvn'), 'max:15'],
+            'nin' => ['required', 'string', 'max:20'],
             'account_type_id' => ['required', 'numeric', Rule::exists(AccountType::class, 'id')],
             'title' => ['nullable', 'string', 'max:10'],
             'mother_maiden_name' => ['required', 'string', 'max:50'],

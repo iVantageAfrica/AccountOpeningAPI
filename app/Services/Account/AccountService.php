@@ -60,12 +60,17 @@ class AccountService
         if (empty($userData['email']) && empty($data['email_address'])) {
             throw new CustomException('Email address is required to create an individual account', 400);
         }
+        if (empty($userData['nin']) && empty($data['nin'])) {
+            throw new CustomException('NIN is required to create an individual account', 400);
+        }
         self::ensureAccountDoesNotExist($userData['id'], $data['account_type_id'], 'INDIVIDUAL');
 
-        //Revalidate to use existing email on the bvn or new email address user want
+        //Revalidate to use existing email, nin on the bvn data or new email address or nin user want
         $emailAddress = empty($data['email_address']) ? $userData['email'] : $data['email_address'];
+        $nin = empty($data['nin']) ? $userData['nin'] : $data['nin'];
         $userData['email'] = $emailAddress;
-        $userModel->update(['email' => $emailAddress]);
+        $userModel->update(['email' => $emailAddress, 'nin' => $nin]);
+
 
         //Create user individual account
         $accountType = AccountType::whereId($data['account_type_id'])->firstOrFail();
