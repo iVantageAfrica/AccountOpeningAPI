@@ -6,6 +6,7 @@ enum AccountNotificationEnum: string
 {
     case ACCOUNT_UPDATE = 'ACCOUNT UPDATE';
     case DOCUMENT_UPDATE = 'DOCUMENT UPDATE';
+    case DOCUMENT_SUBMISSION = 'DOCUMENT SUBMISSION';
     case BANK_ACCOUNT_REFEREE_UPDATE = 'BANK ACCOUNT REFEREE UPDATE';
 
     public static function values(): array

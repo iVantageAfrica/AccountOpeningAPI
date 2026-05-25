@@ -8,6 +8,7 @@ use App\Helpers\FileUploadHelper;
 use App\Jobs\AccountNotificationJob;
 use App\Jobs\AccountRefereeSubmissionNotificationJob;
 use App\Jobs\AccountReferenceJob;
+use App\Jobs\AccountUpdateNotificationJob;
 use App\Jobs\SignatoryDirectoryJob;
 use App\Jobs\SupportAccountNotificationJob;
 use App\Models\Account\CompanyDocument;
@@ -373,7 +374,8 @@ class AccountService
         if (!$account) {
             throw new CustomException('Account not found', 404);
         }
-        IndividualAccountUpdate::create($data);
+        $accountUpdateDataId = IndividualAccountUpdate::create($data)->id;
+        AccountUpdateNotificationJob::dispatch($data['account_number'], $account->account_type_id, $accountUpdateDataId);
         return $data;
     }
 
