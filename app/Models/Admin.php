@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -16,17 +17,17 @@ use Illuminate\Support\Carbon;
  * @property bool $is_admin
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereFirstname($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereIsAdmin($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereLastname($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin wherePassword($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin whereUpdatedAt($value)
+ * @method static Builder<static>|Admin newModelQuery()
+ * @method static Builder<static>|Admin newQuery()
+ * @method static Builder<static>|Admin query()
+ * @method static Builder<static>|Admin whereCreatedAt($value)
+ * @method static Builder<static>|Admin whereEmail($value)
+ * @method static Builder<static>|Admin whereFirstname($value)
+ * @method static Builder<static>|Admin whereId($value)
+ * @method static Builder<static>|Admin whereIsAdmin($value)
+ * @method static Builder<static>|Admin whereLastname($value)
+ * @method static Builder<static>|Admin wherePassword($value)
+ * @method static Builder<static>|Admin whereUpdatedAt($value)
  * @mixin Eloquent
  */
 class Admin extends Model

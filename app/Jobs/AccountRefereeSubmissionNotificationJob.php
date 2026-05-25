@@ -27,16 +27,16 @@ class AccountRefereeSubmissionNotificationJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): bool|null
+    public function handle(): void
     {
         $referee = Referee::find($this->refereeId);
         if (!$referee) {
-            return false;
+            return;
         }
         $accountData = IndividualAccount::whereJsonContains('referees', $this->refereeId)->first()
             ?? CorporateAccount::whereJsonContains('referees', $this->refereeId)->first();
         if (!$accountData) {
-            return false;
+            return;
         }
 
         $pdf = Pdf::loadView('pdf.referee-submission', [

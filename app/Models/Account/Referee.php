@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $comment
  * @property string|null $signature
  * @property bool $is_submitted
+ * @property string|null $address
  * @property Carbon|null $submitted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -44,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|Referee whereSignature($value)
  * @method static Builder<static>|Referee whereSubmittedAt($value)
  * @method static Builder<static>|Referee whereUpdatedAt($value)
+ * @method static Builder<static>|Referee whereAddress($value)
  * @mixin Eloquent
  */
 class Referee extends Model
@@ -51,7 +53,7 @@ class Referee extends Model
     use HasFactory;
     protected $fillable = [
         'name', 'email_address','phone_number', 'mobile_number', 'account_number', 'account_name','account_type', 'bank_name', 'signature',
-        'known_period', 'comment', 'is_submitted', 'submitted_at',
+        'known_period', 'comment', 'is_submitted', 'submitted_at', 'address',
 ];
 
     protected $casts = [

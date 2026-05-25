@@ -32,6 +32,7 @@ class UpdateBankAccountReferenceData extends BaseRequest
             'bank_name' => ['string', 'required', 'max:100'],
             'comment' => ['string', 'nullable', 'max:1000'],
             'known_period' => ['string', 'required', 'max:20'],
+            'address' => ['string', 'nullable', 'max:200'],
             'signature' => ['required', 'file', 'mimes:jpeg,png,jpg,gif,svg,pdf', 'max:2048'],
         ];
     }

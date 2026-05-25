@@ -118,7 +118,6 @@ class AccountService
             null
         );
         SupportAccountNotificationJob::dispatch($accountNumber, $accountType->id);
-
         $userModel->update(['status' => true]);
         return $accountNumber;
     }
@@ -212,6 +211,7 @@ class AccountService
         $accountData->update([
             'referees' => array_merge($accountData->referees ?? [], [$refereeId]),
         ]);
+        AccountRefereeSubmissionNotificationJob::dispatch($refereeId);
         return true;
     }
 
@@ -223,12 +223,14 @@ class AccountService
     {
         //Process the reference
         $refereeId = self::processReferees($data['referee']);
-        match ($data['account_type_id']) {
-            1 => IndividualAccount::whereAccountNumber($data['account_number'])->update(['referees' => $refereeId]),
-            3 => CorporateAccount::whereAccountNumber($data['account_number'])->update(['referees' => $refereeId]),
+        $accountData = match ($data['account_type_id']) {
+            1 => IndividualAccount::whereAccountNumber($data['account_number'])->first(),
+            3 => CorporateAccount::whereAccountNumber($data['account_number'])->first(),
             default => 'Invalid Account type Id'
         };
-
+        if ($accountData) {
+            $accountData->update(['referees' => array_merge($accountData->referees ?? [], $refereeId)]);
+        }
         //Pluck the emails out to send mail
         foreach ($data['referee'] as $index => $referee) {
             $mailData = [
@@ -261,6 +263,7 @@ class AccountService
             'account_type' => $data['account_type'],
             'account_number' => $data['account_number'],
             'bank_name' => $data['bank_name'],
+            'address' => $data['address'] ?? null,
             'known_period' => $data['known_period'] ?? null,
             'comment' => $data['comment'] ?? null,
             'is_submitted' => true,

@@ -122,6 +122,12 @@
     </tr>
 
     <tr>
+        <td><strong>Address</strong></td>
+
+        <td>{{ $refereeData->address }}</td>
+    </tr>
+
+    <tr>
         <td><strong>Account Number</strong></td>
 
         <td>{{ $refereeData->account_number }}</td>
