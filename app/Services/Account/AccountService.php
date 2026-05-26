@@ -416,7 +416,7 @@ class AccountService
         $params = [
             'acc'   => EncryptionHelper::secureTestString($accountNumber),
             'ty'    => EncryptionHelper::secureTestString($accountTypeId),
-            'acNa'  => EncryptionHelper::secureTestString($accountName),
+            'accName'  => EncryptionHelper::secureTestString($accountName),
         ];
         $frontEndUrl = config('app.app_frontend_url');
         return $frontEndUrl.'/verification/account-reference?' . http_build_query($params);
