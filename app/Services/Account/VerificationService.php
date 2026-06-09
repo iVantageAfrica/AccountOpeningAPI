@@ -6,11 +6,13 @@ use App\Enum\OtpPurpose;
 use App\Exceptions\CustomException;
 use App\Helpers\EncryptionHelper;
 use App\Jobs\OTPJobs;
+use App\Models\Admin;
 use App\Models\User;
 use App\Models\Utility\Otp;
 use App\Services\ThirdParty\BluSalt;
 use App\Services\ThirdParty\ImperialMortgage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Random\RandomException;
 
 class VerificationService
@@ -106,6 +108,45 @@ class VerificationService
         return EncryptionHelper::secureString(['reference' => $identifier, 'code' => $otpCode]);
     }
 
+    /**
+     * @throws CustomException
+     * @throws RandomException
+     */
+    public static function adminForgetPassword(string $email): string
+    {
+        $isAdminEmailExist = Admin::whereEmail($email)
+            ->whereIsAdmin(true)
+            ->exists();
+        if (!$isAdminEmailExist) {
+            throw new CustomException('Invalid Account, Email Address does not exist.');
+        }
+        return self::requestOTP($email, OtpPurpose::RESET_PASSWORD);
+    }
+
+    /**
+     * @throws RandomException
+     * @throws CustomException
+     */
+    public static function adminResetPassword(array $data): bool
+    {
+        $email = strtolower($data['reference']);
+        $otpRecord = Otp::whereEmailAddress($email)
+            ->wherePurpose(OtpPurpose::RESET_PASSWORD->value)
+            ->first();
+
+        if (!$otpRecord) {
+            throw new CustomException(message: 'Invalid Authorization token, Kindly request for OTP Code.');
+        }
+        if (Carbon::parse($otpRecord->expires_at)->isPast()) {
+            throw new CustomException(message: 'Authorization token expired. Kindly request for a new OTP Code.');
+        }
+        $admin = Admin::whereEmail($email)->first();
+        if (!$admin) {
+            throw new CustomException(message: 'Invalid Account, Authorization does not support any admin account.');
+        }
+        $admin->update(['password' => Hash::make($data['password'])]);
+        return true;
+    }
 
     /**
      * @throws CustomException
@@ -139,6 +180,7 @@ class VerificationService
         }
         throw new CustomException('Invalid BVN provided. Please try again.', 404);
     }
+
 
 
     private static function resolveIdentifier($identifier): array

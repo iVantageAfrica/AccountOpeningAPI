@@ -6,6 +6,7 @@ use App\Enum\ModelClassEnum;
 use App\Enum\OtpPurpose;
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ResetPasswordRequest;
 use App\Http\Resources\Utility\AccountTypeResource;
 use App\Services\Account\VerificationService;
 use App\Services\Utility\CRUDService;
@@ -64,4 +65,25 @@ class UtilityController extends Controller
         return $this->successDataResponse(data: $verificationToken);
     }
 
+    /**
+     * @throws CustomException
+     * @throws RandomException
+     */
+    public function forgotAdminPassword(Request $request): JsonResponse
+    {
+        ['emailAddress' => $emailAddress] = QueryParamValidator::getRequiredParams($request, ['emailAddress']);
+        return $this->successDataResponse(data: VerificationService::adminForgetPassword($emailAddress));
+    }
+
+    /**
+     * @throws CustomException
+     * @throws RandomException
+     */
+    public function resetAdminPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $data['reference'] = $request->user()->reference;
+        VerificationService::adminResetPassword($data);
+        return $this->successResponse(message: 'Password reset successfully');
+    }
 }

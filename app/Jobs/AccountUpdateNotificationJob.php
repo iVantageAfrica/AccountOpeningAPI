@@ -49,6 +49,8 @@ class AccountUpdateNotificationJob implements ShouldQueue
             ]);
             $pdfOutput = $pdf->output();
             MessageService::supportNotificationMessage([
+                'accountData' => $accountData,
+                'accountUpdateData' => $accountUpdateData,
                 'notificationType' => SupportNotificationEnum::ACCOUNT_UPDATE->value,
                 'attachments' => [[
                     'data' => $pdfOutput,

@@ -38,6 +38,9 @@ class AdminService
         if (!Hash::check($data['password'], $admin->password)) {
             throw  new CustomException('Invalid email address or password', 401);
         }
+        if (!$admin->is_admin) {
+            throw new CustomException('Account deactivated, Contact support', 401);
+        }
         return [
             'token' => JWTTokenService::generateToken($admin->adminInformation()),
             'adminInformation' => $admin->adminInformation(),

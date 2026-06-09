@@ -96,4 +96,9 @@ class User extends Model
             Str::slug($this->firstname . ' ' . $this->lastname, '.')
         );
     }
+
+    public function getFullNameAttribute(): string
+    {
+        return $this->firstname .' '. $this->middle_name.' ' . $this->lastname;
+    }
 }

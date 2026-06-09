@@ -25,6 +25,7 @@ use App\Models\Utility\AccountType;
 use App\Services\ThirdParty\ImperialMortgage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use JsonException;
 use Random\RandomException;
 use Throwable;
 
@@ -80,7 +81,7 @@ class AccountService
         $accountNumber = ImperialMortgage::createIndividualAccount($userData, $residential_address);
 
         //Create and assigned user to mobile banking
-        $internetBankingRegistration = self::internetBankingAssignment($userData);
+        $internetBankingRegistration = self::internetBankingAssignment($userData, $accountNumber);
 
         //Save Account Data
         DB::transaction(static function () use ($userData, $accountNumber, $data, $residential_address) {
@@ -175,7 +176,7 @@ class AccountService
         $pin = null;
         if ($accountType->id === 4) {
             //Create and assigned user to mobile banking
-            $internetBankingRegistration = self::internetBankingAssignment($userData);
+            $internetBankingRegistration = self::internetBankingAssignment($userData, $accountNumber);
             $username = $internetBankingRegistration['username'];
             $password = $internetBankingRegistration['password'];
             $pin = $internetBankingRegistration['pin'];
@@ -473,7 +474,10 @@ class AccountService
         return $baseUrl . http_build_query($params);
     }
 
-    private static function internetBankingAssignment(array $userData): array
+    /**
+     * @throws JsonException
+     */
+    private static function internetBankingAssignment(array $userData, $accountNumber): array
     {
         //Create and assigned user to mobile banking
         $username = !empty($userData['email']) ? $userData['email'] : strtolower($userData['firstname'] . '.' . $userData['lastname']);
@@ -482,7 +486,8 @@ class AccountService
         $userData['password'] = $password;
         $userData['pin'] = $pin;
         $userData['username'] = $username;
-        $internetBankingReg = ImperialMortgage::internetBankingRegistration($userData);
+        $userData['account_number'] = $accountNumber;
+        $internetBankingReg = ImperialMortgage::createInternetBankingAccount($userData);
 
         return ['username' => $internetBankingReg ? $username : '',
                 'pin' => $internetBankingReg ? $pin : '',

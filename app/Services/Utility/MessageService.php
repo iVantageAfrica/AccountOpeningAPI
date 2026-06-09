@@ -80,7 +80,7 @@ class MessageService
     public static function supportNotificationMessage(array $data): void
     {
         $view = SupportNotificationEnum::from($data['notificationType'])->view();
-        $subject = SupportNotificationEnum::from($data['notificationType'])->subject();
+        $subject = SupportNotificationEnum::from($data['notificationType'])->subject(). ' .ACC NO-'.$data['accountData']['account_number'];
         self::mailMessageWithAttachment(config('mail.customer_support_mail'), $subject, $view, $data, $data['attachments'] ?? []);
     }
 

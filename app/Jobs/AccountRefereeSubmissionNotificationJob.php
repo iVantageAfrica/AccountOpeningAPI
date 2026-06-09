@@ -51,6 +51,8 @@ class AccountRefereeSubmissionNotificationJob implements ShouldQueue
 
         $pdfOutput = $pdf->output();
         MessageService::supportNotificationMessage([
+            'accountData' => $accountData,
+            'refereeData' => $referee,
             'notificationType' => SupportNotificationEnum::REFEREE_UPDATE->value,
             'attachments' => [[
                 'data' => $pdfOutput,

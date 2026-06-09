@@ -6,6 +6,7 @@ use App\Exceptions\CustomException;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 use SimpleXMLElement;
 use Throwable;
 
@@ -101,6 +102,42 @@ class ImperialMortgage
         return self::accountOpening($baseurl.'/CreateCorporateAccount', $params);
     }
 
+    public static function sendSmsToUser(string $phoneNumber, string $message): bool
+    {
+        $phoneNumber = '234' . substr(preg_replace('/\D/', '', $phoneNumber), -10);
+
+        $textHex = bin2hex($message);
+        $configUsername = config('services.vanso.username');
+        $configPassword = config('services.vanso.password');
+        $url = config('services.vanso.url');
+
+
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<operation type="submit">
+    <account username="{$configUsername}" password="{$configPassword}" />
+    <submitRequest>
+        <deliveryReport>true</deliveryReport>
+        <sourceAddress type="alphanumeric">ImperialMBL</sourceAddress>
+        <destinationAddress type="international">{$phoneNumber}</destinationAddress>
+        <text encoding="ISO-8859-1">{$textHex}</text>
+    </submitRequest>
+</operation>
+XML;
+
+        try {
+            $response = Http::withHeaders(['Content-Type' => 'text/xml'])
+                ->withBody($xml, 'text/xml')
+                ->post($url)
+                ->body();
+            $xmlResponse = new SimpleXMLElement($response);
+            $submitResponse = $xmlResponse->submitResponse[0] ?? null;
+            return isset($submitResponse->error['code']) && (string)$submitResponse?->error['code'] === '0';
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
     /**
      * @param mixed $baseurl
      * @param array $params
@@ -136,6 +173,69 @@ class ImperialMortgage
         }
     }
 
+    /**
+     * @throws JsonException
+     */
+    public static function createInternetBankingAccount(array $data): bool
+    {
+        $payload = [
+            'customer_code' => 'CUST-' . $data['account_number'],
+            'firstname'     => $data['firstname'],
+            'surname'       => $data['lastname'],
+            'email'         => $data['email'],
+            'phone'         => $data['phone_number'],
+            'pin'           => $data['pin'],
+        ];
+
+        $method = 'POST';
+        $path = '/internal/v1/accounts';
+        $timestamp = (string) time();
+        $body = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        $signature = self::generateSignature($method, $path, $timestamp, $body);
+        $url = rtrim(config('services.internetBankingS2S.baseUrl'), '/') . $path;
+
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'X-Timestamp'  => $timestamp,
+                    'X-Signature'  => $signature,
+                    'X-Client-Id'  => config('services.internetBankingS2S.clientId'),
+                    'Content-Type' => 'application/json',
+                ])
+                ->withBody($body, 'application/json')
+                ->post($url);
+
+            $responseData = $response->json();
+
+            if ($response->status() === 422) {
+                Log::info('S2S validation failed', ['response' => $responseData, 'request'  => $payload]);
+                return false;
+            }
+
+            if ($response->status() === 401) {
+                Log::error('S2S unauthorized', ['response' => $responseData]);
+                return false;
+            }
+
+            if (!$response->successful()) {
+                Log::error('S2S unexpected error', ['response' => $responseData]);
+                return false;
+            }
+            return true;
+
+        } catch (Throwable $e) {
+            Log::error('S2S exception', [
+                'message' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+    private static function generateSignature(string $method, string $path, string $timestamp, string $rawBody): string
+    {
+        $stringToSign = strtoupper($method) . $path . $timestamp . $rawBody;
+
+        return hash_hmac('sha256', $stringToSign, config('services.internetBankingS2S.clientSecret'));
+    }
 
     public static function internetBankingRegistration(array $data): bool
     {
@@ -176,42 +276,6 @@ class ImperialMortgage
 
         } catch (Throwable $e) {
             Log::error('Imperial Mobile Registration Exception', ['error' => $e->getMessage(), 'request' => $payload]);
-            return false;
-        }
-    }
-
-    public static function sendSmsToUser(string $phoneNumber, string $message): bool
-    {
-        $phoneNumber = '234' . substr(preg_replace('/\D/', '', $phoneNumber), -10);
-
-        $textHex = bin2hex($message);
-        $configUsername = config('services.vanso.username');
-        $configPassword = config('services.vanso.password');
-        $url = config('services.vanso.url');
-
-
-        $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<operation type="submit">
-    <account username="{$configUsername}" password="{$configPassword}" />
-    <submitRequest>
-        <deliveryReport>true</deliveryReport>
-        <sourceAddress type="alphanumeric">ImperialMBL</sourceAddress>
-        <destinationAddress type="international">{$phoneNumber}</destinationAddress>
-        <text encoding="ISO-8859-1">{$textHex}</text>
-    </submitRequest>
-</operation>
-XML;
-
-        try {
-            $response = Http::withHeaders(['Content-Type' => 'text/xml'])
-                ->withBody($xml, 'text/xml')
-                ->post($url)
-                ->body();
-            $xmlResponse = new SimpleXMLElement($response);
-            $submitResponse = $xmlResponse->submitResponse[0] ?? null;
-            return isset($submitResponse->error['code']) && (string)$submitResponse?->error['code'] === '0';
-        } catch (Throwable $e) {
             return false;
         }
     }

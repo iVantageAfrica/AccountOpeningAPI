@@ -56,5 +56,10 @@ return [
         'password' => env('VANSO_PASSWORD'),
         'url'      => env('VANSO_URL'),
     ],
-
+    'internetBankingS2S' => [
+        'baseUrl'      => env('S2S_BASE_URL'),
+        'clientId'     => env('S2S_CLIENT_ID'),
+        'clientSecret' => env('S2S_CLIENT_SECRET'),
+        'clientName'   => env('S2S_CLIENT_NAME'),
+    ],
 ];

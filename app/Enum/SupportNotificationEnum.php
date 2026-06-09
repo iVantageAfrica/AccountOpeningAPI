@@ -16,8 +16,9 @@ enum SupportNotificationEnum: string
     public function view(): string
     {
         return match ($this) {
-            self::ACCOUNT_CREATION,
-            self::REFEREE_UPDATE, self::ACCOUNT_UPDATE => 'emails.supportNotification',
+            self::ACCOUNT_CREATION => 'emails.support.accountCreation',
+            self::REFEREE_UPDATE => 'emails.support.refereeUpdate',
+            self::ACCOUNT_UPDATE => 'emails.support.accountUpdate',
         };
     }
 

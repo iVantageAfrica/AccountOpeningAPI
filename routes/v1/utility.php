@@ -7,5 +7,7 @@ Route::controller(UtilityController::class)->group(function () {
     Route::get('list-account-type', 'listAccountTypes');
     Route::get('verify-bvn', 'verifyBvn');
     Route::get('request-otp', 'requestOtp');
+    Route::get('reset-admin-password', 'forgotAdminPassword');
     Route::get('verify-otp', 'verifyOtp')->middleware('access.token');
+    Route::post('update-admin-password', 'resetAdminPassword')->middleware('access.token');
 });

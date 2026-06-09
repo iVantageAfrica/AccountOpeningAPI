@@ -46,6 +46,7 @@ class SupportAccountNotificationJob implements ShouldQueue
             $pdfOutput = $pdf->output();
             MessageService::supportNotificationMessage([
                 'notificationType' => SupportNotificationEnum::ACCOUNT_CREATION->value,
+                'accountData' => $accountData,
                 'attachments' => [[
                     'data' => $pdfOutput,
                     'mime' => 'application/pdf',
