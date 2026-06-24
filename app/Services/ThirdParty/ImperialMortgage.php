@@ -186,13 +186,13 @@ XML;
             'phone'         => $data['phone_number'],
             'pin'           => $data['pin'],
         ];
-
         $method = 'POST';
         $path = '/internal/v1/accounts';
         $timestamp = (string) time();
         $body = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         $signature = self::generateSignature($method, $path, $timestamp, $body);
         $url = rtrim(config('services.internetBankingS2S.baseUrl'), '/') . $path;
+
 
         try {
             $response = Http::timeout(30)

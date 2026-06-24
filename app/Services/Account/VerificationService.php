@@ -132,6 +132,7 @@ class VerificationService
         $email = strtolower($data['reference']);
         $otpRecord = Otp::whereEmailAddress($email)
             ->wherePurpose(OtpPurpose::RESET_PASSWORD->value)
+            ->latest()
             ->first();
 
         if (!$otpRecord) {

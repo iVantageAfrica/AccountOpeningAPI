@@ -45,7 +45,7 @@ class MessageService
             OtpPurpose::RESET_PASSWORD->value => 'emails.resetPassword',
         ];
         if (isset($emailTemplates[$purpose])) {
-            self::mailMessage($emailAddress, $purpose, $emailTemplates[$purpose], ['otpCode' => $code]);
+            self::mailMessage($emailAddress, $purpose, $emailTemplates[$purpose], ['otpCode' => $code, 'userName' => extractNameFromEmail($emailAddress)]);
         }
     }
 

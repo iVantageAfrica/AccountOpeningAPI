@@ -74,6 +74,19 @@ if (!function_exists('generateCustomId')) {
     }
 }
 
+if (!function_exists('extractNameFromEmail')) {
+    /**
+     * @param string $email The email address.
+     * @return string The extracted name.
+     */
+    function extractNameFromEmail(string $email): string
+    {
+        $local = explode('@', $email)[0];
+        $name  = str_replace(['.', '_', '-'], ' ', $local);
+        return ucwords($name);
+    }
+}
+
 if (!function_exists('isImageFile')) {
 
     function isImageFile($file): bool

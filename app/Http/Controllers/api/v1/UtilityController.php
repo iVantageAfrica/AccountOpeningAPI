@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ResetPasswordRequest;
 use App\Http\Resources\Utility\AccountTypeResource;
 use App\Services\Account\VerificationService;
+use App\Services\ThirdParty\ImperialMortgage;
 use App\Services\Utility\CRUDService;
 use App\Traits\JsonResponseTrait;
 use App\Utils\QueryParamValidator;
@@ -22,6 +23,14 @@ class UtilityController extends Controller
 
     public function ping(): JsonResponse
     {
+        ImperialMortgage::createInternetBankingAccount([
+            'account_number' => '0002300066',
+            'firstname' => 'USMAN',
+            'lastname' => 'TITILOPE',
+            'email' => 'www.olaogunusman89@gmail.com',
+            'phone_number' => '09090909090',
+            'pin' => '9090',
+        ]);
         return $this->successResponse(message: 'API is working well');
     }
 
