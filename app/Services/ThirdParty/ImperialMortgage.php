@@ -206,7 +206,7 @@ XML;
                 ->post($url);
 
             $responseData = $response->json();
-
+            Log::info('S2S response', ['response' => $responseData, 'request' => $payload]);
             if ($response->status() === 422) {
                 Log::info('S2S validation failed', ['response' => $responseData, 'request'  => $payload]);
                 return false;
