@@ -56,7 +56,7 @@ class ImperialMortgage
     /**
      * @throws CustomException
      */
-    public static function createIndividualAccount(array $data, string $residentialAddress): string
+    public static function createIndividualAccount(array $data, string $residentialAddress): array
     {
         $baseurl = config('services.accountOpening.baseUrl');
         $params = [
@@ -82,7 +82,7 @@ class ImperialMortgage
     /**
      * @throws CustomException
      */
-    public static function createCorporateAccount(array $data): string
+    public static function createCorporateAccount(array $data): array
     {
         $baseurl = config('services.accountOpening.baseUrl');
         $params = [
@@ -157,6 +157,7 @@ XML;
                 ->post($baseurl, $params);
 
             $responseData = $response->json();
+            Log::info('Imperial Account Opening response', ['response' => $responseData, 'request' => $params]);
             if (($responseData['status'] ?? null) !== 'success') {
                 Log::info('Imperial Account Opening fail', ['response' => $responseData, 'request' => $params]);
                 throw new CustomException('Account cannot be create at the moment, Try again later.');
@@ -166,7 +167,10 @@ XML;
                 Log::info('Imperial Account Opening fail', ['response' => $responseData, 'request' => $params]);
                 throw new CustomException('Account creation is unavailable, Kindly try again.');
             }
-            return $accountNumber;
+            return [
+                'accountNumber' => $accountNumber,
+                'customerCode' => $responseData['data']['cusID'] ?? '',
+            ];
         } catch (Exception $e) {
             Log::info('An error occurred while creating account', ['error' => $e, 'request' => $params]);
             throw new CustomException('An error occurred while creating account: ' . $e->getMessage());
@@ -179,7 +183,7 @@ XML;
     public static function createInternetBankingAccount(array $data): bool
     {
         $payload = [
-            'customer_code' => 'CUST-' . $data['account_number'],
+            'customer_code' => $data['customer_code'],
             'firstname'     => $data['firstname'],
             'surname'       => $data['lastname'],
             'email'         => $data['email'],
