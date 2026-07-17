@@ -182,9 +182,9 @@ class AccountService
         if ($accountType->id === 4) {
             //Create and assigned user to mobile banking
             $internetBankingRegistration = self::internetBankingAssignment($userData, $accountNumber, $customerCode);
-            $username = $internetBankingRegistration['username'];
-            $password = $internetBankingRegistration['password'];
-            $pin = $internetBankingRegistration['pin'];
+            $username = $internetBankingRegistration['username'] ?? '';
+            $password = $internetBankingRegistration['password'] ?? '';
+            $pin = $internetBankingRegistration['pin'] ?? '';
         }
         AccountNotificationJob::dispatch(
             $data['bvn'],
@@ -495,9 +495,9 @@ class AccountService
         $userData['customer_code'] = $customerCode;
         $internetBankingReg = ImperialMortgage::createInternetBankingAccount($userData);
 
-        return ['username' => $internetBankingReg ? $username : '',
-                'pin' => $internetBankingReg ? $pin : '',
-                'password' => $internetBankingReg ? $password : '',
+        return ['username' => $internetBankingReg['username'] ?? '',
+                'pin' => $internetBankingReg['pin'] ?? '',
+                'password' => $internetBankingReg['password'] ?? '',
             ];
     }
 
