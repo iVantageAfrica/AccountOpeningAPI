@@ -157,7 +157,6 @@ XML;
                 ->post($baseurl, $params);
 
             $responseData = $response->json();
-            Log::info('Imperial Account Opening response', ['response' => $responseData, 'request' => $params]);
             if (($responseData['status'] ?? null) !== 'success') {
                 Log::info('Imperial Account Opening fail', ['response' => $responseData, 'request' => $params]);
                 throw new CustomException('Account cannot be create at the moment, Try again later.');
@@ -180,7 +179,7 @@ XML;
     /**
      * @throws JsonException
      */
-    public static function createInternetBankingAccount(array $data): bool
+    public static function createInternetBankingAccount(array $data): array
     {
         $payload = [
             'customer_code' => $data['customer_code'],
@@ -197,7 +196,6 @@ XML;
         $signature = self::generateSignature($method, $path, $timestamp, $body);
         $url = rtrim(config('services.internetBankingS2S.baseUrl'), '/') . $path;
 
-
         try {
             $response = Http::timeout(30)
                 ->withHeaders([
@@ -210,28 +208,21 @@ XML;
                 ->post($url);
 
             $responseData = $response->json();
-            Log::info('S2S response', ['response' => $responseData, 'request' => $payload]);
-            if ($response->status() === 422) {
-                Log::info('S2S validation failed', ['response' => $responseData, 'request'  => $payload]);
-                return false;
+            if (!$response->successful() || !($responseData['success'] ?? false)) {
+                Log::error('S2S account creation failed', [ 'status'   => $response->status(), 'response' => $responseData, 'request' => $payload ]);
+                return [];
             }
-
-            if ($response->status() === 401) {
-                Log::error('S2S unauthorized', ['response' => $responseData]);
-                return false;
-            }
-
-            if (!$response->successful()) {
-                Log::error('S2S unexpected error', ['response' => $responseData]);
-                return false;
-            }
-            return true;
-
+            return [
+                'username' => $data['email'],
+                'pin' => $data['pin'],
+                'userId'  => $responseData['data']['user_id'] ?? '',
+                'password' => $responseData['data']['password'] ?? '',
+            ];
         } catch (Throwable $e) {
             Log::error('S2S exception', [
                 'message' => $e->getMessage(),
             ]);
-            return false;
+            return [];
         }
     }
     private static function generateSignature(string $method, string $path, string $timestamp, string $rawBody): string
