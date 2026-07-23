@@ -35,6 +35,10 @@ class AccountReferenceSubmissionData extends FormRequest
             'address' => ['string', 'nullable', 'max:200'],
             'known_period' => ['string', 'required', 'max:20'],
             'signature' => ['required', 'file', 'mimes:jpeg,png,jpg,gif,svg,pdf', 'max:2048'],
+
+            'account_holder_name' => ['string', 'nullable', 'max:100'],
+            'account_holder_number' => ['string', 'nullable', 'max:100'],
+            'account_holder_email' => ['string', 'nullable', 'max:150'],
         ];
     }
 }

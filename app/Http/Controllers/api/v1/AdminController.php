@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\AuthenticateRequest;
 use App\Http\Resources\Account\CorporateAccountResource;
 use App\Http\Resources\Account\DebitCardResource;
 use App\Http\Resources\Account\IndividualAccountResource;
+use App\Http\Resources\Account\RefereeResource;
 use App\Http\Resources\Account\UserResource;
 use App\Services\Account\AdminService;
 use App\Traits\CustomPaginationResponseTrait;
@@ -75,6 +76,12 @@ class AdminController extends Controller
         $corporateAccount = AdminService::corporateAccountList('4');
         return $this->customPaginationResponse($corporateAccount, $request, CorporateAccountResource::class, ['account_number', 'status']);
     }
+    public function listPortalReferenceAccount(Request $request): JsonResponse
+    {
+        $portalReferenceAccount = AdminService::portalReferenceAccountList();
+        return $this->customPaginationResponse($portalReferenceAccount, $request, RefereeResource::class, ['account_number']);
+    }
+
 
     public function corporateAccountSummary(Request $request): JsonResponse
     {
@@ -83,6 +90,11 @@ class AdminController extends Controller
     public function POSAccountSummary(Request $request): JsonResponse
     {
         return $this->successDataResponse(AdminService::corporateAccountSummary(4));
+    }
+
+    public function portalReferenceSummary(Request $request): JsonResponse
+    {
+        return $this->successDataResponse(AdminService::portalReferenceSummary());
     }
 
 

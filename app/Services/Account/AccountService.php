@@ -222,6 +222,14 @@ class AccountService
         return true;
     }
 
+    public static function createExtendBankAccountReference(array $data): bool
+    {
+        $data['signature'] = isset($data['signature']) && $data['signature'] instanceof UploadedFile ? FileUploadHelper::uploadFile($data['signature']) : null;
+        $data['is_portal_reference']  = true;
+        $refereeId = Referee::create($data)->id;
+        //        AccountRefereeSubmissionNotificationJob::dispatch($refereeId);
+        return true;
+    }
 
     /**
      * @throws RandomException

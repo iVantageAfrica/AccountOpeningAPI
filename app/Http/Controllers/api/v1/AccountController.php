@@ -72,6 +72,13 @@ class AccountController extends Controller
         return $this->successResponse(message: 'Bank account reference submitted successfully.');
     }
 
+    public function createExtendBankAccountReference(AccountReferenceSubmissionData $request): JsonResponse
+    {
+        $data = $request->validated();
+        AccountService::createExtendBankAccountReference($data);
+        return $this->successResponse(message: 'Bank account reference submitted successfully.');
+    }
+
     /**
      * @throws RandomException
      * @throws CustomException

@@ -27,6 +27,10 @@ class RefereeResource extends JsonResource
             'comment' => $this->comment ?? null,
             'address' => $this->address ?? null,
             'signature' => $this->signature ?? null,
+            'accountHolderName' => $this->account_holder_name ?? null,
+            'accountHolderNumber' => $this->account_holder_number ?? null,
+            'accountHolderEmail' => $this->account_holder_email ?? null,
+            'createdAt' => isset($this->created_at) ? date_format($this->created_at, 'Y-m-d H:i:s') : null,
         ];
     }
 }

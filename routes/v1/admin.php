@@ -12,6 +12,7 @@ Route::controller(AdminController::class)->group(function () {
         Route::get('current-account-list', 'listCurrentAccount');
         Route::get('corporate-account-list', 'listCorporateAccount');
         Route::get('pos-account-list', 'listPOSAccount');
+        Route::get('portal-reference-list', 'listPortalReferenceAccount');
 
 
         Route::get('fetch-individual-account', 'fetchIndividualAccount');
@@ -21,6 +22,7 @@ Route::controller(AdminController::class)->group(function () {
         Route::get('current-account-summary', 'currentAccountSummary');
         Route::get('corporate-account-summary', 'corporateAccountSummary');
         Route::get('pos-account-summary', 'POSAccountSummary');
+        Route::get('portal-reference-summary', 'portalReferenceSummary');
         Route::get('debit-card-requests', 'listDebitCardRequest');
 
         Route::post('account-update-link', 'accountUpdateLink');

@@ -79,6 +79,12 @@ class AdminService
             ->orderByDesc('id');
     }
 
+    public static function portalReferenceAccountList(): Builder
+    {
+        return Referee::whereIsPortalReference(true)
+            ->latest('created_at');
+    }
+
     public static function individualAccountSummary(string|int $accountTypeId): array
     {
         $summary = IndividualAccount::where('account_type_id', $accountTypeId)
@@ -195,6 +201,17 @@ class AdminService
             'url' => config('app.app_frontend_url') . $paths[$data['notification_type']] . '?' . $query,
         ]);
         return true;
+    }
+
+    public static function portalReferenceSummary(): array
+    {
+        $query = Referee::whereIsPortalReference(true);
+        return [
+            'totalReference'   => (clone $query)->count(),
+            'todayReference'   => (clone $query)->whereDate('created_at', today())->count(),
+            'weeklyReference'  => (clone $query)->thisWeek()->count(),
+            'monthlyReference' => (clone $query)->thisMonth()->count(),
+        ];
     }
 
     /**
