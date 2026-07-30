@@ -9,6 +9,7 @@ use App\Jobs\AccountNotificationJob;
 use App\Jobs\AccountRefereeSubmissionNotificationJob;
 use App\Jobs\AccountReferenceJob;
 use App\Jobs\AccountUpdateNotificationJob;
+use App\Jobs\PortalReferenceNotificationJob;
 use App\Jobs\SignatoryDirectoryJob;
 use App\Jobs\SupportAccountNotificationJob;
 use App\Models\Account\CompanyDocument;
@@ -226,8 +227,9 @@ class AccountService
     {
         $data['signature'] = isset($data['signature']) && $data['signature'] instanceof UploadedFile ? FileUploadHelper::uploadFile($data['signature']) : null;
         $data['is_portal_reference']  = true;
+        $data['account_holder_email'] = isset($data['account_holder_email']) && $data['account_holder_email'] !== 'undefined' ? $data['account_holder_email'] : null;
         $refereeId = Referee::create($data)->id;
-        //        AccountRefereeSubmissionNotificationJob::dispatch($refereeId);
+        PortalReferenceNotificationJob::dispatch($refereeId);
         return true;
     }
 
