@@ -87,13 +87,13 @@
 
 
     <tr>
-        <td><strong>Account Number:</strong><br>{{ $accountData->account_number }}</td>
-        <td><strong>Account Name:</strong><br>@if(in_array($accountData->account_type_id, [1,2], true)) {{ $userData->firstname }} {{ $userData->lastname }}@else {{ $accountData->company_name }} @endif</td>
+        <td><strong>Account Number:</strong><br>{{ $refereeData->account_holder_number }}</td>
+        <td><strong>Account Name:</strong><br>{{ $refereeData->account_holder_name }}</td>
     </tr>
 
     <tr>
-        <td><strong>Account Type:</strong><br> {{ $accountData->account_type_name }}</td>
-        <td><strong>Created At:</strong><br> {{ $accountData->created_at?->format('Y-m-d') }}</td>
+        <td><strong>Account Holder Email:</strong><br> {{ $refereeData->account_holder_email }}</td>
+        <td></td>
     </tr>
 
 
@@ -154,7 +154,7 @@
     <tr>
         <td><strong>Comment</strong></td>
         <td>{{ $refereeData->comment }}</td>
-     </tr>
+    </tr>
 
     <!-- Signature LAST -->
     <tr>

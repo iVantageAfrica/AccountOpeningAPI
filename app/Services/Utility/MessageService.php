@@ -84,6 +84,17 @@ class MessageService
         self::mailMessageWithAttachment(config('mail.customer_support_mail'), $subject, $view, $data, $data['attachments'] ?? []);
     }
 
+    public static function portalReferenceNotification(array $data): void
+    {
+        $adminView = SupportNotificationEnum::from($data['notificationType'])->view();
+        $adminSubject = SupportNotificationEnum::from($data['notificationType'])->subject();
+        $accountHolderView = 'emails.refereeNotification';
+        $accountHolderSubject = 'New Imperial Account Reference Submitted– Account Opening Requirement';
+        if (!empty($data['refereeData']['account_holder_email']) && $data['refereeData']['account_holder_email'] !== 'undefined') {
+            self::mailMessage($data['refereeData']['account_holder_email'], $accountHolderSubject, $accountHolderView, $data);
+        }
+        self::mailMessageWithAttachment(config('mail.customer_support_mail'), $adminSubject, $adminView, $data, $data['attachments'] ?? []);
+    }
     public static function mailMessage(string $emailAddress, string $subject, string $viewName, array $data = []): void
     {
         Mail::send(
