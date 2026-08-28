@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# Pre-commit hook: runs PHP CS Fixer with PSR-12 rules on staged PHP files.
+#
+# It first checks for styling issues. If issues are found, it automatically
+# applies fixes, re-stages the files, and instructs the user to re-commit.
+# If the code is already clean, it prints a confirmation message.
+
+set -e
+
+COLOR_RESET="\033[0m"
+COLOR_GREEN="\033[0;32m"
+COLOR_YELLOW="\033[0;33m"
+COLOR_RED="\033[0;31m"
+
+PHP_CS_FIXER="vendor/bin/php-cs-fixer"
+
+if [ ! -f "$PHP_CS_FIXER" ]; then
+    echo "${COLOR_YELLOW}php-cs-fixer is not installed. Run 'composer install' to enable the PSR-12 check.${COLOR_RESET}"
+    exit 0
+fi
+
+# Collect staged PHP files (deletions are excluded).
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM -- '*.php')
+
+if [ -z "$STAGED_PHP" ]; then
+    echo "${COLOR_GREEN}No staged PHP files to check. All code is clean.${COLOR_RESET}"
+    exit 0
+fi
+
+FIXED=0
+
+for FILE in $STAGED_PHP; do
+    if [ ! -f "$FILE" ]; then
+        continue
+    fi
+
+    "$PHP_CS_FIXER" fix "$FILE" --config=.php-cs-fixer.php --using-cache=no >/dev/null 2>&1 || true
+
+    # Re-stage the file only if PHP CS Fixer changed it.
+    if ! git diff --quiet -- "$FILE"; then
+        git add "$FILE"
+        FIXED=1
+    fi
+done
+
+if [ "$FIXED" -eq 1 ]; then
+    echo "${COLOR_YELLOW}PHP CS Fixer applied PSR-12 formatting to your staged files. They have been re-staged.${COLOR_RESET}"
+    echo "${COLOR_YELLOW}Please review the changes and run 'git commit' again.${COLOR_RESET}"
+    exit 1
+fi
+
+echo "${COLOR_GREEN}All code is clean (PSR-12).${COLOR_RESET}"
+exit 0

@@ -5,18 +5,25 @@ namespace App\Http\Controllers\api\v1;
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AccountUpdateLinkRequest;
+use App\Http\Requests\Admin\AssignRoleRequest;
 use App\Http\Requests\Admin\AuthenticateRequest;
+use App\Http\Requests\Admin\ChangePasswordRequest;
+use App\Http\Requests\Admin\CreateAdminRequest;
+use App\Http\Requests\Admin\UpdateAdminRequest;
+use App\Http\Requests\Admin\UpdateProfileRequest;
 use App\Http\Resources\Account\CorporateAccountResource;
 use App\Http\Resources\Account\DebitCardResource;
 use App\Http\Resources\Account\IndividualAccountResource;
 use App\Http\Resources\Account\RefereeResource;
 use App\Http\Resources\Account\UserResource;
 use App\Services\Account\AdminService;
+use App\Services\Account\AuditLogService;
 use App\Traits\CustomPaginationResponseTrait;
 use App\Traits\JsonResponseTrait;
 use App\Utils\QueryParamValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use JsonException;
 use Random\RandomException;
 
 class AdminController extends Controller
@@ -30,8 +37,17 @@ class AdminController extends Controller
     public function authenticate(AuthenticateRequest $request): JsonResponse
     {
         $data = $request->validated();
-        return $this->successDataResponse(AdminService::authenticate($data));
+        return $this->successDataResponse(AdminService::authenticate($data, $request));
     }
+
+    //    /**
+    //     * @throws JsonException
+    //     */
+    //    public function dataLink(Request $request): JsonResponse
+    //    {
+    //        AdminService::dataLink();
+    //        return $this->successResponse(message: "Data link sent successfully.");
+    //    }
 
     public function customers(Request $request): JsonResponse
     {
@@ -130,5 +146,91 @@ class AdminController extends Controller
         $data = $request->validated();
         AdminService::accountUpdateLinkNotification($data);
         return $this->successResponse(message: 'Account update link sent successfully.');
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function assignRole(AssignRoleRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        return $this->successDataResponse(AdminService::assignRole($data, $request));
+    }
+
+
+    /**
+     * @throws CustomException
+     */
+    public function createAdmin(CreateAdminRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        return $this->successDataResponse(AdminService::createAdmin($data, $request));
+    }
+
+    public function listAdmins(): JsonResponse
+    {
+        return $this->successDataResponse(AdminService::listAdmins());
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function fetchAdmin(Request $request): JsonResponse
+    {
+        ['adminId' => $adminId] = QueryParamValidator::getRequiredParams($request, ['adminId']);
+        return $this->successDataResponse(AdminService::fetchAdmin((int) $adminId));
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function updateAdmin(UpdateAdminRequest $request, int $adminId): JsonResponse
+    {
+        $data = $request->validated();
+        return $this->successDataResponse(AdminService::updateAdmin($data, $adminId, $request));
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function deleteAdmin(Request $request, int $adminId): JsonResponse
+    {
+        AdminService::deleteAdmin($adminId, $request);
+        return $this->successResponse(message: 'Admin deleted successfully.');
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $adminId = $request->user()->id;
+        return $this->successDataResponse(AdminService::updateProfile($data, $adminId, $request));
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $adminId = $request->user()->id;
+        AdminService::changePassword($data, $adminId, $request);
+        return $this->successResponse(message: 'Password changed successfully.');
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function listAuditLogs(Request $request): JsonResponse
+    {
+        $adminId = $request->get('adminId') ? (int) $request->get('adminId') : null;
+        $action = $request->get('action');
+        $from = $request->get('from');
+        $to = $request->get('to');
+
+        $query = AuditLogService::list($adminId, $action, $from, $to);
+        return $this->customPaginationResponse($query, $request, \App\Http\Resources\Admin\AuditLogResource::class, ['description']);
     }
 }

@@ -29,7 +29,7 @@ class AdminService
      * @throws CustomException
      * @throws RandomException
      */
-    public static function authenticate(array $data): array
+    public static function authenticate(array $data, ?\Illuminate\Http\Request $request = null): array
     {
         $admin = Admin::whereEmail(strtolower($data['email']))->first();
         if (!$admin) {
@@ -41,9 +41,45 @@ class AdminService
         if (!$admin->is_admin) {
             throw new CustomException('Account deactivated, Contact support', 401);
         }
+
+        AuditLogService::record($admin->id, 'admin_login', "{$admin->firstname} {$admin->lastname} logged in", $request);
+
         return [
             'token' => JWTTokenService::generateToken($admin->adminInformation()),
-            'adminInformation' => $admin->adminInformation(),
+            'adminInformation' => $admin->adminInformationWithRolesAndPermissions(),
+        ];
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function assignRole(array $data, ?\Illuminate\Http\Request $request = null): array
+    {
+        $admin = Admin::find($data['admin_id']);
+        if (!$admin) {
+            throw new CustomException('Admin not found', 404);
+        }
+
+        if (self::isMainSuperAdmin($admin)) {
+            throw new CustomException('The role of the main super admin cannot be changed', 422);
+        }
+
+        $previousRole = $admin->getRoleNames()->first() ?? null;
+        $admin->syncRoles($data['role']);
+
+        $actor = $request?->user();
+        AuditLogService::record(
+            $actor?->id ?? $admin->id,
+            'assign_role',
+            "Assigned role '{$data['role']}' to {$admin->firstname} {$admin->lastname}" . ($previousRole ? " (previously: {$previousRole})" : ''),
+            $request,
+            ['admin_id' => $admin->id, 'previous_role' => $previousRole, 'new_role' => $data['role']]
+        );
+
+        return [
+            'admin_id' => $admin->id,
+            'email' => $admin->email,
+            'role' => $data['role'],
         ];
     }
 
@@ -522,5 +558,245 @@ class AdminService
         }
 
         return $signatories;
+    }
+
+
+    /**
+     * @throws CustomException
+     */
+    public static function createAdmin(array $data, ?\Illuminate\Http\Request $request = null): array
+    {
+        $existingAdmin = Admin::whereEmail(strtolower($data['email']))->first();
+        if ($existingAdmin) {
+            throw new CustomException('An admin with this email already exists', 422);
+        }
+
+        $admin = Admin::create([
+            'firstname'    => $data['firstname'],
+            'lastname'     => $data['lastname'],
+            'email'        => strtolower($data['email']),
+            'password'     => Hash::make($data['password']),
+            'is_admin'     => true,
+            'is_super_admin' => false,
+            'is_default_password' => true,
+        ]);
+
+        if (!empty($data['role'])) {
+            $admin->assignRole($data['role']);
+        }
+
+        $actor = $request?->user();
+        AuditLogService::record(
+            $actor?->id,
+            'create_admin',
+            "Created admin '{$admin->firstname} {$admin->lastname}' ({$admin->email}) with default password",
+            $request,
+            ['admin_id' => $admin->id, 'role' => $data['role'] ?? null]
+        );
+
+        return [
+            'id' => $admin->id,
+            'firstname' => $admin->firstname,
+            'lastname' => $admin->lastname,
+            'email' => $admin->email,
+            'role' => $data['role'] ?? null,
+            'is_admin' => $admin->is_admin,
+            'is_default_password' => $admin->is_default_password,
+        ];
+    }
+
+    public static function listAdmins(): Collection
+    {
+        return Admin::with('roles')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function fetchAdmin(int $adminId): array
+    {
+        $admin = Admin::with('roles')->find($adminId);
+        if (!$admin) {
+            throw new CustomException('Admin not found', 404);
+        }
+
+        return [
+            'id' => $admin->id,
+            'firstname' => $admin->firstname,
+            'lastname' => $admin->lastname,
+            'email' => $admin->email,
+            'is_admin' => $admin->is_admin,
+            'is_super_admin' => $admin->is_super_admin,
+            'is_default_password' => $admin->is_default_password,
+            'role' => $admin->getRoleNames()->first() ?? null,
+            'permissions' => $admin->getAllPermissions()->pluck('name')->toArray(),
+            'created_at' => $admin->created_at,
+        ];
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function updateAdmin(array $data, int $adminId, ?\Illuminate\Http\Request $request = null): array
+    {
+        $admin = Admin::find($adminId);
+        if (!$admin) {
+            throw new CustomException('Admin not found', 404);
+        }
+
+        if (self::isMainSuperAdmin($admin)) {
+            if (isset($data['role'])) {
+                throw new CustomException('The role of the main super admin cannot be changed', 422);
+            }
+            if (!empty($data['email']) && strtolower($data['email']) !== $admin->email) {
+                throw new CustomException('The email of the main super admin cannot be changed', 422);
+            }
+        }
+
+        $updateData = [
+            'firstname' => $data['firstname'] ?? $admin->firstname,
+            'lastname'  => $data['lastname'] ?? $admin->lastname,
+        ];
+
+        if (!empty($data['email']) && strtolower($data['email']) !== $admin->email) {
+            $emailExists = Admin::where('email', strtolower($data['email']))->where('id', '!=', $adminId)->exists();
+            if ($emailExists) {
+                throw new CustomException('An admin with this email already exists', 422);
+            }
+            $updateData['email'] = strtolower($data['email']);
+        }
+
+        $admin->update($updateData);
+
+        $previousRole = $admin->getRoleNames()->first() ?? null;
+        if (isset($data['role'])) {
+            $admin->syncRoles($data['role']);
+        }
+
+        $actor = $request?->user();
+        AuditLogService::record(
+            $actor?->id ?? $admin->id,
+            'update_admin',
+            "Updated admin '{$admin->firstname} {$admin->lastname}' ({$admin->email})",
+            $request,
+            ['admin_id' => $admin->id, 'previous_role' => $previousRole, 'new_role' => $data['role'] ?? null]
+        );
+
+        return [
+            'id' => $admin->id,
+            'firstname' => $admin->firstname,
+            'lastname' => $admin->lastname,
+            'email' => $admin->email,
+            'role' => $admin->getRoleNames()->first() ?? null,
+        ];
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function deleteAdmin(int $adminId, ?\Illuminate\Http\Request $request = null): void
+    {
+        $admin = Admin::find($adminId);
+        if (!$admin) {
+            throw new CustomException('Admin not found', 404);
+        }
+
+        if (self::isMainSuperAdmin($admin)) {
+            throw new CustomException('Cannot delete the main super admin', 422);
+        }
+
+        $actor = $request?->user();
+        AuditLogService::record(
+            $actor?->id,
+            'delete_admin',
+            "Deleted admin '{$admin->firstname} {$admin->lastname}' ({$admin->email})",
+            $request,
+            ['admin_id' => $admin->id]
+        );
+
+        $admin->syncRoles([]);
+        $admin->delete();
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function updateProfile(array $data, int $adminId, ?\Illuminate\Http\Request $request = null): array
+    {
+        $admin = Admin::find($adminId);
+        if (!$admin) {
+            throw new CustomException('Admin not found', 404);
+        }
+
+        $updateData = [];
+        if (isset($data['firstname'])) {
+            $updateData['firstname'] = $data['firstname'];
+        }
+        if (isset($data['lastname'])) {
+            $updateData['lastname'] = $data['lastname'];
+        }
+
+        if (self::isMainSuperAdmin($admin)) {
+            unset($updateData['email']);
+            if (!empty($data['email'])) {
+                throw new CustomException('The email of the main super admin cannot be changed', 422);
+            }
+        } elseif (!empty($data['email']) && strtolower($data['email']) !== $admin->email) {
+            $emailExists = Admin::where('email', strtolower($data['email']))->where('id', '!=', $adminId)->exists();
+            if ($emailExists) {
+                throw new CustomException('An admin with this email already exists', 422);
+            }
+            $updateData['email'] = strtolower($data['email']);
+        }
+
+        if (!empty($updateData)) {
+            $admin->update($updateData);
+            AuditLogService::record(
+                $admin->id,
+                'update_profile',
+                "{$admin->firstname} {$admin->lastname} updated their profile",
+                $request,
+                ['updated_fields' => array_keys($updateData)]
+            );
+        }
+
+        return $admin->adminInformationWithRolesAndPermissions();
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public static function changePassword(array $data, int $adminId, ?\Illuminate\Http\Request $request = null): void
+    {
+        $admin = Admin::find($adminId);
+        if (!$admin) {
+            throw new CustomException('Admin not found', 404);
+        }
+
+        if (!Hash::check($data['current_password'], $admin->password)) {
+            throw new CustomException('Current password is incorrect', 422);
+        }
+
+        $admin->update([
+            'password' => Hash::make($data['password']),
+            'is_default_password' => false,
+        ]);
+
+        AuditLogService::record(
+            $admin->id,
+            'change_password',
+            "{$admin->firstname} {$admin->lastname} changed their password",
+            $request
+        );
+    }
+
+    /**
+     * The main super admin account cannot have its role or email changed.
+     */
+    private static function isMainSuperAdmin(Admin $admin): bool
+    {
+        return strtolower($admin->email) === 'superadmin@imperial.com';
     }
 }

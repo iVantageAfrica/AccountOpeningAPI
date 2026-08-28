@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Admin;
 use App\Services\Utility\JWTTokenService;
 use App\Traits\JsonResponseTrait;
 use Closure;
@@ -34,7 +35,13 @@ class AdminAccess
         if (empty($decryptToken) || empty($decryptToken['isAdmin']) || !is_numeric($decryptToken['id'])) {
             return $this->errorResponse(501, message: 'Unauthorized - Invalid Administrative token');
         }
-        $request->setUserResolver(fn () => (object) $decryptToken);
+
+        $admin = Admin::find($decryptToken['id']);
+        if (!$admin || !$admin->is_admin) {
+            return $this->errorResponse(401, message: 'Unauthorized - Admin account not found or deactivated');
+        }
+
+        $request->setUserResolver(fn () => $admin);
         return $next($request);
     }
 }

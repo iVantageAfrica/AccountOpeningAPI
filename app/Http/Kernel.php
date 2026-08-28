@@ -45,5 +45,6 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'access.token' => \App\Http\Middleware\AccessToken::class,
         'access.administrative' => AdminAccess::class,
+        'permission' => \App\Http\Middleware\CheckPermission::class,
     ];
 }
