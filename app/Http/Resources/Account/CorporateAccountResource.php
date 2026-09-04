@@ -46,8 +46,11 @@ class CorporateAccountResource extends JsonResource
             'accountOfficer' => $this->account_officer ?? null,
             'debitCard' => $this->debit_card ?? null,
             'status' => $this->status ?? null,
+            'cmoStatus' => $this->cmo_status ?? null,
+            'complianceStatus' => $this->compliance_status ?? null,
             'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
         ];
+
         $userData = collect((new UserResource($this->user))->resolve())
             ->except(['id', 'createdAt'])
             ->toArray();
@@ -60,6 +63,12 @@ class CorporateAccountResource extends JsonResource
         return array_merge($basic, [
             'companyDocument' => CompanyDocumentResource::make($this->whenLoaded('companyDocument')),
             'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
+            'cmoReviewedByName' => $this->whenLoaded('cmoReviewer', fn() => $this->cmoReviewer ? trim($this->cmoReviewer->firstname . ' ' . $this->cmoReviewer->lastname) : null),
+            'cmoReviewedAt' => $this->cmo_reviewed_at ? date_format($this->cmo_reviewed_at, 'Y-m-d H:i:s') : null,
+            'cmoFlaggedReason' => $this->cmo_flagged_reason ?? null,
+            'complianceReviewedByName' => $this->whenLoaded('complianceReviewer', fn() => $this->complianceReviewer ? trim($this->complianceReviewer->firstname . ' ' . $this->complianceReviewer->lastname) : null),
+            'complianceReviewedAt' => $this->compliance_reviewed_at ? date_format($this->compliance_reviewed_at, 'Y-m-d H:i:s') : null,
+            'complianceFlaggedReason' => $this->compliance_flagged_reason ?? null,
             'documents' => DocumentResource::make($this->whenLoaded('document')),
             'referee' => RefereeResource::collection($this->getRelationValue('referees') ?? []),
             'signatory' => SignatoryResource::collection($this->getRelationValue('signatories') ?? []),

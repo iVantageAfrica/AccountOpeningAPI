@@ -2,6 +2,7 @@
 
 namespace App\Models\Account;
 
+use App\Models\Admin;
 use App\Models\User;
 use Eloquent;
 use Illuminate\Database\Eloquent\Builder;
@@ -87,11 +88,23 @@ class IndividualAccount extends Model
         'user_id', 'account_type_id','account_number','mother_maiden_name','phone_number','employment_status','employer_address', 'employer',
         'title', 'marital_status', 'address', 'next_of_kin_name','next_of_kin_address','next_of_kin_relationship','origin','lga',
         'next_of_kin_phone_number', 'document_id', 'referees','debit_card','status','referrer', 'occupation','account_officer',
+        'cmo_status', 'cmo_reviewed_by', 'cmo_reviewed_at', 'cmo_flagged_reason',
+        'compliance_status', 'compliance_reviewed_by', 'compliance_reviewed_at', 'compliance_flagged_reason',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function cmoReviewer(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'cmo_reviewed_by');
+    }
+
+    public function complianceReviewer(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'compliance_reviewed_by');
     }
 
     public function document(): HasMany
@@ -107,6 +120,8 @@ class IndividualAccount extends Model
     protected $casts = [
         'referees' => 'array',
         'debit_card' => 'boolean',
+        'cmo_reviewed_at' => 'datetime',
+        'compliance_reviewed_at' => 'datetime',
     ];
 
     public function getAccountTypeNameAttribute(): string

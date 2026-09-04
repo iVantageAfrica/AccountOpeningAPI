@@ -35,6 +35,8 @@ class IndividualAccountResource extends JsonResource
             'accountNumber' => $this->account_number ?? null,
             'motherMaidenName' => $this->mother_maiden_name ?? null,
             'status' => $this->status ?? null,
+            'cmoStatus' => $this->cmo_status ?? null,
+            'complianceStatus' => $this->compliance_status ?? null,
             'createdAt' => date_format($this->created_at ?? null, 'Y-m-d H:i:s'),
         ];
         $userData = collect((new UserResource($this->user))->resolve())
@@ -66,6 +68,12 @@ class IndividualAccountResource extends JsonResource
             'referrer' => $this->referrer ?? null,
             'accountOfficer' => $this->account_officer ?? null,
             'occupation' => $this->occupation ?? null,
+            'cmoReviewedByName' => $this->whenLoaded('cmoReviewer', fn() => $this->cmoReviewer ? trim($this->cmoReviewer->firstname . ' ' . $this->cmoReviewer->lastname) : null),
+            'cmoReviewedAt' => $this->cmo_reviewed_at ? date_format($this->cmo_reviewed_at, 'Y-m-d H:i:s') : null,
+            'cmoFlaggedReason' => $this->cmo_flagged_reason ?? null,
+            'complianceReviewedByName' => $this->whenLoaded('complianceReviewer', fn() => $this->complianceReviewer ? trim($this->complianceReviewer->firstname . ' ' . $this->complianceReviewer->lastname) : null),
+            'complianceReviewedAt' => $this->compliance_reviewed_at ? date_format($this->compliance_reviewed_at, 'Y-m-d H:i:s') : null,
+            'complianceFlaggedReason' => $this->compliance_flagged_reason ?? null,
             'documents' => DocumentResource::collection($this->whenLoaded('document')),
             'referee' => RefereeResource::collection($this->getRelationValue('referees') ?? []),
             'accountUpdates' => IndividualAccountUpdateResource::collection($this->whenLoaded('accountUpdates')),

@@ -2,6 +2,7 @@
 
 namespace App\Models\Account;
 
+use App\Models\Admin;
 use App\Models\User;
 use App\Models\Utility\CompanyType;
 use Eloquent;
@@ -79,6 +80,8 @@ class CorporateAccount extends Model
         'user_id', 'account_type_id','account_number', 'company_name','registration_number','company_type_id','tin','status',
         'address','phone_number','business_email','city', 'lga','state','account_officer','signatories','referees',
         'debit_card','directories','company_document_id',
+        'cmo_status', 'cmo_reviewed_by', 'cmo_reviewed_at', 'cmo_flagged_reason',
+        'compliance_status', 'compliance_reviewed_by', 'compliance_reviewed_at', 'compliance_flagged_reason',
     ];
 
     protected $casts = [
@@ -86,11 +89,23 @@ class CorporateAccount extends Model
         'signatories' => 'array',
         'directories' => 'array',
         'debit_card' => 'boolean',
+        'cmo_reviewed_at' => 'datetime',
+        'compliance_reviewed_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function cmoReviewer(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'cmo_reviewed_by');
+    }
+
+    public function complianceReviewer(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'compliance_reviewed_by');
     }
 
     public function companyType(): BelongsTo

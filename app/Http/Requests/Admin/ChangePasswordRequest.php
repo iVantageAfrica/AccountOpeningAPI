@@ -15,7 +15,17 @@ class ChangePasswordRequest extends BaseRequest
     {
         return [
             'current_password' => ['required', 'string'],
-            'password'         => ['required', 'string', 'min:8', 'confirmed'],
+            'password'         => [
+                'required',
+                'string',
+                'min:7',
+                'max:100',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/\d/',
+                'regex:/[^A-Za-z0-9]/',
+                'confirmed',
+            ],
         ];
     }
 }

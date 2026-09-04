@@ -39,5 +39,10 @@ Route::controller(AdminController::class)->group(function () {
         Route::delete('delete-admin/{adminId}', 'deleteAdmin')->middleware('permission:manage-admins');
 
         Route::get('audit-logs', 'listAuditLogs')->middleware('permission:manage-admins');
+
+        Route::post('review-account', 'cmoReviewAccount')->middleware('permission:review-account');
+        Route::post('flag-account', 'cmoFlagAccount')->middleware('permission:flag-account');
+        Route::post('approve-account', 'complianceApproveAccount')->middleware('permission:approve-account');
+        Route::post('flag-account-for-compliance', 'complianceFlagAccount')->middleware('permission:flag-account-for-compliance');
     });
 });

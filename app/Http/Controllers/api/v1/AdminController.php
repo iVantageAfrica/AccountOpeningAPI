@@ -9,6 +9,8 @@ use App\Http\Requests\Admin\AssignRoleRequest;
 use App\Http\Requests\Admin\AuthenticateRequest;
 use App\Http\Requests\Admin\ChangePasswordRequest;
 use App\Http\Requests\Admin\CreateAdminRequest;
+use App\Http\Requests\Admin\FlagAccountRequest;
+use App\Http\Requests\Admin\ReviewAccountRequest;
 use App\Http\Requests\Admin\UpdateAdminRequest;
 use App\Http\Requests\Admin\UpdateProfileRequest;
 use App\Http\Resources\Account\CorporateAccountResource;
@@ -16,6 +18,7 @@ use App\Http\Resources\Account\DebitCardResource;
 use App\Http\Resources\Account\IndividualAccountResource;
 use App\Http\Resources\Account\RefereeResource;
 use App\Http\Resources\Account\UserResource;
+use App\Services\Account\AccountReviewService;
 use App\Services\Account\AdminService;
 use App\Services\Account\AuditLogService;
 use App\Traits\CustomPaginationResponseTrait;
@@ -232,5 +235,60 @@ class AdminController extends Controller
 
         $query = AuditLogService::list($adminId, $action, $from, $to);
         return $this->customPaginationResponse($query, $request, \App\Http\Resources\Admin\AuditLogResource::class, ['description']);
+    }
+
+    /**
+     * CMO - Reviewed
+     *
+     * @throws CustomException
+     */
+    public function cmoReviewAccount(ReviewAccountRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $account = AccountReviewService::cmoReview($data, $request);
+        return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
+    }
+
+    /**
+     * CMO - Flagged
+     *
+     * @throws CustomException
+     */
+    public function cmoFlagAccount(FlagAccountRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $account = AccountReviewService::cmoFlag($data, $request);
+        return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
+    }
+
+    /**
+     * Compliance - Approved
+     *
+     * @throws CustomException
+     */
+    public function complianceApproveAccount(ReviewAccountRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $account = AccountReviewService::complianceApprove($data, $request);
+        return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
+    }
+
+    /**
+     * Compliance - Flagged
+     *
+     * @throws CustomException
+     */
+    public function complianceFlagAccount(FlagAccountRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $account = AccountReviewService::complianceFlag($data, $request);
+        return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
+    }
+
+    private function reviewResource(mixed $account, string $accountType): IndividualAccountResource|CorporateAccountResource
+    {
+        return $accountType === 'corporate'
+            ? CorporateAccountResource::make($account, true)
+            : IndividualAccountResource::make($account, true);
     }
 }
