@@ -163,7 +163,7 @@ class AdminService
     public static function fetchIndividualAccount(string|int $accountNumber): Builder|IndividualAccount|null
     {
         $accountDetails = IndividualAccount::whereAccountNumber($accountNumber)
-            ->with(['user', 'document', 'accountUpdates', 'cmoReviewer:id,firstname,lastname,email', 'complianceReviewer:id,firstname,lastname,email'])
+            ->with(['user', 'document', 'accountUpdates', 'cmoReviewer:id,firstname,lastname,email', 'complianceReviewer:id,firstname,lastname,email', 'complianceAssignee:id,firstname,lastname,email'])
             ->first();
 
         if (!$accountDetails) {
@@ -181,7 +181,7 @@ class AdminService
     public static function fetchCorporateAccount(string|int $accountNumber): Builder|CorporateAccount|null
     {
         $accountDetails = CorporateAccount::whereAccountNumber($accountNumber)
-            ->with(['user', 'companyType', 'companyDocument', 'cmoReviewer:id,firstname,lastname,email', 'complianceReviewer:id,firstname,lastname,email'])
+            ->with(['user', 'companyType', 'companyDocument', 'cmoReviewer:id,firstname,lastname,email', 'complianceReviewer:id,firstname,lastname,email', 'complianceAssignee:id,firstname,lastname,email'])
             ->first();
 
         if (!$accountDetails) {

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Helpers\BaseRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 
 class ReviewAccountRequest extends BaseRequest
 {
@@ -17,6 +18,7 @@ class ReviewAccountRequest extends BaseRequest
         return [
             'accountNumber' => ['required', 'string'],
             'accountType' => ['required', 'string', Rule::in(['individual', 'corporate'])],
+            'complianceOfficerId' => ['nullable', 'integer', new Exists('admins', 'id')],
         ];
     }
 }

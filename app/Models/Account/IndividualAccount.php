@@ -90,6 +90,7 @@ class IndividualAccount extends Model
         'next_of_kin_phone_number', 'document_id', 'referees','debit_card','status','referrer', 'occupation','account_officer',
         'cmo_status', 'cmo_reviewed_by', 'cmo_reviewed_at', 'cmo_flagged_reason',
         'compliance_status', 'compliance_reviewed_by', 'compliance_reviewed_at', 'compliance_flagged_reason',
+        'compliance_assigned_to', 'compliance_assigned_at',
     ];
 
     public function user(): BelongsTo
@@ -107,6 +108,11 @@ class IndividualAccount extends Model
         return $this->belongsTo(Admin::class, 'compliance_reviewed_by');
     }
 
+    public function complianceAssignee(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'compliance_assigned_to');
+    }
+
     public function document(): HasMany
     {
         return $this->hasMany(Document::class, 'account_number', 'account_number');
@@ -122,6 +128,7 @@ class IndividualAccount extends Model
         'debit_card' => 'boolean',
         'cmo_reviewed_at' => 'datetime',
         'compliance_reviewed_at' => 'datetime',
+        'compliance_assigned_at' => 'datetime',
     ];
 
     public function getAccountTypeNameAttribute(): string

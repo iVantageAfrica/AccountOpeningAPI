@@ -44,5 +44,9 @@ Route::controller(AdminController::class)->group(function () {
         Route::post('flag-account', 'cmoFlagAccount')->middleware('permission:flag-account');
         Route::post('approve-account', 'complianceApproveAccount')->middleware('permission:approve-account');
         Route::post('flag-account-for-compliance', 'complianceFlagAccount')->middleware('permission:flag-account-for-compliance');
+
+        Route::get('compliance-officers', 'listComplianceOfficers')->middleware('permission:review-account');
+        Route::get('awaiting-compliance-review', 'awaitingComplianceReview')->middleware('permission:approve-account');
+        Route::get('compliance-review-summary', 'complianceReviewSummary')->middleware('permission:approve-account');
     });
 });

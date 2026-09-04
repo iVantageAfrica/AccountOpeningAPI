@@ -285,6 +285,30 @@ class AdminController extends Controller
         return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
     }
 
+    /**
+     * CMO (and Super Admin) - list Compliance Officers for assignment.
+     */
+    public function listComplianceOfficers(): JsonResponse
+    {
+        return $this->successDataResponse(AccountReviewService::listComplianceOfficers());
+    }
+
+    /**
+     * Compliance - accounts assigned to the active officer awaiting review.
+     */
+    public function awaitingComplianceReview(Request $request): JsonResponse
+    {
+        return $this->successDataResponse(AccountReviewService::awaitingComplianceReviewList($request));
+    }
+
+    /**
+     * Compliance - count of accounts awaiting the active officer's review.
+     */
+    public function complianceReviewSummary(Request $request): JsonResponse
+    {
+        return $this->successDataResponse(AccountReviewService::complianceReviewSummary($request));
+    }
+
     private function reviewResource(mixed $account, string $accountType): IndividualAccountResource|CorporateAccountResource
     {
         return $accountType === 'corporate'

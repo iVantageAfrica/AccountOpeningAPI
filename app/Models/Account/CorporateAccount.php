@@ -82,6 +82,7 @@ class CorporateAccount extends Model
         'debit_card','directories','company_document_id',
         'cmo_status', 'cmo_reviewed_by', 'cmo_reviewed_at', 'cmo_flagged_reason',
         'compliance_status', 'compliance_reviewed_by', 'compliance_reviewed_at', 'compliance_flagged_reason',
+        'compliance_assigned_to', 'compliance_assigned_at',
     ];
 
     protected $casts = [
@@ -91,6 +92,7 @@ class CorporateAccount extends Model
         'debit_card' => 'boolean',
         'cmo_reviewed_at' => 'datetime',
         'compliance_reviewed_at' => 'datetime',
+        'compliance_assigned_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -106,6 +108,11 @@ class CorporateAccount extends Model
     public function complianceReviewer(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'compliance_reviewed_by');
+    }
+
+    public function complianceAssignee(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'compliance_assigned_to');
     }
 
     public function companyType(): BelongsTo
