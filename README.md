@@ -2,6 +2,7 @@
 
 This document provides sample requests and responses for the Imperial Account Opening API and the Internet Banking (S2S) registration API.
 
+
 ## Imperial Account Opening
 
 ### Sample Request

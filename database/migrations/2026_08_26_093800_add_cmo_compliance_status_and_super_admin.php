@@ -66,3 +66,5 @@ return new class () extends Migration {
         DB::table('admins')->where('email', 'superadmin@imperial.com')->delete();
     }
 };
+
+
