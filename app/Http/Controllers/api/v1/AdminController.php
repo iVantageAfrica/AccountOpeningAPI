@@ -9,18 +9,22 @@ use App\Http\Requests\Admin\AssignRoleRequest;
 use App\Http\Requests\Admin\AuthenticateRequest;
 use App\Http\Requests\Admin\ChangePasswordRequest;
 use App\Http\Requests\Admin\CreateAdminRequest;
+use App\Http\Requests\Admin\CreateSupportNotificationRequest;
 use App\Http\Requests\Admin\FlagAccountRequest;
 use App\Http\Requests\Admin\ReviewAccountRequest;
 use App\Http\Requests\Admin\UpdateAdminRequest;
 use App\Http\Requests\Admin\UpdateProfileRequest;
+use App\Http\Requests\Admin\UpdateSupportNotificationRequest;
 use App\Http\Resources\Account\CorporateAccountResource;
 use App\Http\Resources\Account\DebitCardResource;
 use App\Http\Resources\Account\IndividualAccountResource;
 use App\Http\Resources\Account\RefereeResource;
 use App\Http\Resources\Account\UserResource;
+use App\Http\Resources\Admin\SupportNotificationResource;
 use App\Services\Account\AccountReviewService;
 use App\Services\Account\AdminService;
 use App\Services\Account\AuditLogService;
+use App\Services\Account\SupportNotificationService;
 use App\Traits\CustomPaginationResponseTrait;
 use App\Traits\JsonResponseTrait;
 use App\Utils\QueryParamValidator;
@@ -31,8 +35,8 @@ use Random\RandomException;
 
 class AdminController extends Controller
 {
-    use JsonResponseTrait;
     use CustomPaginationResponseTrait;
+    use JsonResponseTrait;
 
     /**
      * @throws CustomException|RandomException
@@ -40,6 +44,7 @@ class AdminController extends Controller
     public function authenticate(AuthenticateRequest $request): JsonResponse
     {
         $data = $request->validated();
+
         return $this->successDataResponse(AdminService::authenticate($data, $request));
     }
 
@@ -55,6 +60,7 @@ class AdminController extends Controller
     public function customers(Request $request): JsonResponse
     {
         $customerList = AdminService::customerList();
+
         return $this->customPaginationResponse($customerList, $request, UserResource::class, ['bvn', 'firstname', 'lastname', 'phone_number']);
     }
 
@@ -66,7 +72,8 @@ class AdminController extends Controller
     public function listSavingsAccount(Request $request): JsonResponse
     {
         $savingsAccount = AdminService::individualAccount(2);
-        return $this->customPaginationResponse($savingsAccount, $request, IndividualAccountResource::class, ['account_number','status']);
+
+        return $this->customPaginationResponse($savingsAccount, $request, IndividualAccountResource::class, ['account_number', 'status']);
     }
 
     public function savingsAccountSummary(Request $request): JsonResponse
@@ -77,6 +84,7 @@ class AdminController extends Controller
     public function listCurrentAccount(Request $request): JsonResponse
     {
         $savingsAccount = AdminService::individualAccount(1);
+
         return $this->customPaginationResponse($savingsAccount, $request, IndividualAccountResource::class, ['account_number', 'status']);
     }
 
@@ -88,24 +96,29 @@ class AdminController extends Controller
     public function listCorporateAccount(Request $request): JsonResponse
     {
         $corporateAccount = AdminService::corporateAccountList('3');
+
         return $this->customPaginationResponse($corporateAccount, $request, CorporateAccountResource::class, ['account_number', 'status']);
     }
+
     public function listPOSAccount(Request $request): JsonResponse
     {
         $corporateAccount = AdminService::corporateAccountList('4');
+
         return $this->customPaginationResponse($corporateAccount, $request, CorporateAccountResource::class, ['account_number', 'status']);
     }
+
     public function listPortalReferenceAccount(Request $request): JsonResponse
     {
         $portalReferenceAccount = AdminService::portalReferenceAccountList();
+
         return $this->customPaginationResponse($portalReferenceAccount, $request, RefereeResource::class, ['account_number']);
     }
-
 
     public function corporateAccountSummary(Request $request): JsonResponse
     {
         return $this->successDataResponse(AdminService::corporateAccountSummary(3));
     }
+
     public function POSAccountSummary(Request $request): JsonResponse
     {
         return $this->successDataResponse(AdminService::corporateAccountSummary(4));
@@ -116,13 +129,13 @@ class AdminController extends Controller
         return $this->successDataResponse(AdminService::portalReferenceSummary());
     }
 
-
     /**
      * @throws CustomException
      */
     public function fetchIndividualAccount(Request $request): JsonResponse
     {
         ['accountNumber' => $accountNumber] = QueryParamValidator::getRequiredParams($request, ['accountNumber']);
+
         return $this->successDataResponse(IndividualAccountResource::make(AdminService::fetchIndividualAccount($accountNumber), true));
     }
 
@@ -132,12 +145,14 @@ class AdminController extends Controller
     public function fetchCorporateAccount(Request $request): JsonResponse
     {
         ['accountNumber' => $accountNumber] = QueryParamValidator::getRequiredParams($request, ['accountNumber']);
+
         return $this->successDataResponse(CorporateAccountResource::make(AdminService::fetchCorporateAccount($accountNumber), true));
     }
 
     public function listDebitCardRequest(): JsonResponse
     {
         $debitCardRequest = AdminService::listCardsRequest();
+
         return $this->successDataResponse(new DebitCardResource($debitCardRequest));
     }
 
@@ -148,6 +163,7 @@ class AdminController extends Controller
     {
         $data = $request->validated();
         AdminService::accountUpdateLinkNotification($data);
+
         return $this->successResponse(message: 'Account update link sent successfully.');
     }
 
@@ -157,9 +173,9 @@ class AdminController extends Controller
     public function assignRole(AssignRoleRequest $request): JsonResponse
     {
         $data = $request->validated();
+
         return $this->successDataResponse(AdminService::assignRole($data, $request));
     }
-
 
     /**
      * @throws CustomException
@@ -167,6 +183,7 @@ class AdminController extends Controller
     public function createAdmin(CreateAdminRequest $request): JsonResponse
     {
         $data = $request->validated();
+
         return $this->successDataResponse(AdminService::createAdmin($data, $request));
     }
 
@@ -181,6 +198,7 @@ class AdminController extends Controller
     public function fetchAdmin(Request $request): JsonResponse
     {
         ['adminId' => $adminId] = QueryParamValidator::getRequiredParams($request, ['adminId']);
+
         return $this->successDataResponse(AdminService::fetchAdmin((int) $adminId));
     }
 
@@ -190,6 +208,7 @@ class AdminController extends Controller
     public function updateAdmin(UpdateAdminRequest $request, int $adminId): JsonResponse
     {
         $data = $request->validated();
+
         return $this->successDataResponse(AdminService::updateAdmin($data, $adminId, $request));
     }
 
@@ -199,6 +218,7 @@ class AdminController extends Controller
     public function deleteAdmin(Request $request, int $adminId): JsonResponse
     {
         AdminService::deleteAdmin($adminId, $request);
+
         return $this->successResponse(message: 'Admin deleted successfully.');
     }
 
@@ -209,6 +229,7 @@ class AdminController extends Controller
     {
         $data = $request->validated();
         $adminId = $request->user()->id;
+
         return $this->successDataResponse(AdminService::updateProfile($data, $adminId, $request));
     }
 
@@ -220,6 +241,7 @@ class AdminController extends Controller
         $data = $request->validated();
         $adminId = $request->user()->id;
         AdminService::changePassword($data, $adminId, $request);
+
         return $this->successResponse(message: 'Password changed successfully.');
     }
 
@@ -234,7 +256,75 @@ class AdminController extends Controller
         $to = $request->get('to');
 
         $query = AuditLogService::list($adminId, $action, $from, $to);
+
         return $this->customPaginationResponse($query, $request, \App\Http\Resources\Admin\AuditLogResource::class, ['description']);
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function createSupportNotification(CreateSupportNotificationRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $notification = SupportNotificationService::create($data);
+
+        return $this->successDataResponse(SupportNotificationResource::make($notification), message: 'Support notification created successfully.');
+    }
+
+    public function listSupportNotifications(Request $request): JsonResponse
+    {
+        $notifications = SupportNotificationService::list();
+
+        return $this->successDataResponse(SupportNotificationResource::collection($notifications));
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function fetchSupportNotification(Request $request, int $id): JsonResponse
+    {
+        return $this->successDataResponse(SupportNotificationResource::make(SupportNotificationService::fetch($id)));
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function updateSupportNotification(UpdateSupportNotificationRequest $request, int $id): JsonResponse
+    {
+        $data = $request->validated();
+        $notification = SupportNotificationService::update($data, $id);
+
+        return $this->successDataResponse(SupportNotificationResource::make($notification), message: 'Support notification updated successfully.');
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function activateSupportNotification(Request $request, int $id): JsonResponse
+    {
+        $notification = SupportNotificationService::activate($id);
+
+        return $this->successDataResponse(SupportNotificationResource::make($notification), message: 'Support notification activated successfully.');
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function deactivateSupportNotification(Request $request, int $id): JsonResponse
+    {
+        $notification = SupportNotificationService::deactivate($id);
+
+        return $this->successDataResponse(SupportNotificationResource::make($notification), message: 'Support notification deactivated successfully.');
+    }
+
+    /**
+     * @throws CustomException
+     */
+    public function deleteSupportNotification(Request $request, int $id): JsonResponse
+    {
+        SupportNotificationService::delete($id);
+
+        return $this->successResponse(message: 'Support notification deleted successfully.');
     }
 
     /**
@@ -246,6 +336,7 @@ class AdminController extends Controller
     {
         $data = $request->validated();
         $account = AccountReviewService::cmoReview($data, $request);
+
         return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
     }
 
@@ -258,6 +349,7 @@ class AdminController extends Controller
     {
         $data = $request->validated();
         $account = AccountReviewService::cmoFlag($data, $request);
+
         return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
     }
 
@@ -270,6 +362,7 @@ class AdminController extends Controller
     {
         $data = $request->validated();
         $account = AccountReviewService::complianceApprove($data, $request);
+
         return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
     }
 
@@ -282,6 +375,7 @@ class AdminController extends Controller
     {
         $data = $request->validated();
         $account = AccountReviewService::complianceFlag($data, $request);
+
         return $this->successDataResponse($this->reviewResource($account, $data['accountType']));
     }
 

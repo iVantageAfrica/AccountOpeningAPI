@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             AccountTypeSeeder::class,
             CompanyTypeSeeder::class,
             RolesAndPermissionsSeeder::class,
+            SupportNotificationSeeder::class,
         ]);
     }
 }

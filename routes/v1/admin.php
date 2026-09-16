@@ -12,7 +12,6 @@ Route::controller(AdminController::class)->group(function () {
         Route::post('assign-role', 'assignRole')->middleware('permission:assign-roles');
         Route::post('account-update-link', 'accountUpdateLink')->middleware('permission:send-account-update-link');
 
-
         Route::get('customer-summary', 'customerSummary')->middleware('permission:view-dashboard');
         Route::get('savings-account-summary', 'savingsAccountSummary')->middleware('permission:view-dashboard');
         Route::get('current-account-summary', 'currentAccountSummary')->middleware('permission:view-dashboard');
@@ -31,7 +30,6 @@ Route::controller(AdminController::class)->group(function () {
         Route::get('fetch-corporate-account', 'fetchCorporateAccount')->middleware('permission:view-account-details');
         Route::get('debit-card-requests', 'listDebitCardRequest')->middleware('permission:view-debit-card-requests');
 
-
         Route::post('create-admin', 'createAdmin')->middleware('permission:manage-admins');
         Route::get('list-admins', 'listAdmins')->middleware('permission:manage-admins');
         Route::get('fetch-admin', 'fetchAdmin')->middleware('permission:manage-admins');
@@ -39,6 +37,14 @@ Route::controller(AdminController::class)->group(function () {
         Route::delete('delete-admin/{adminId}', 'deleteAdmin')->middleware('permission:manage-admins');
 
         Route::get('audit-logs', 'listAuditLogs')->middleware('permission:manage-admins');
+
+        Route::post('create-support-notification', 'createSupportNotification')->middleware('permission:manage-support-notifications');
+        Route::get('list-support-notifications', 'listSupportNotifications')->middleware('permission:manage-support-notifications');
+        Route::get('fetch-support-notification/{id}', 'fetchSupportNotification')->middleware('permission:manage-support-notifications');
+        Route::put('update-support-notification/{id}', 'updateSupportNotification')->middleware('permission:manage-support-notifications');
+        Route::post('activate-support-notification/{id}', 'activateSupportNotification')->middleware('permission:manage-support-notifications');
+        Route::post('deactivate-support-notification/{id}', 'deactivateSupportNotification')->middleware('permission:manage-support-notifications');
+        Route::delete('delete-support-notification/{id}', 'deleteSupportNotification')->middleware('permission:manage-support-notifications');
 
         Route::post('review-account', 'cmoReviewAccount')->middleware('permission:review-account');
         Route::post('flag-account', 'cmoFlagAccount')->middleware('permission:flag-account');

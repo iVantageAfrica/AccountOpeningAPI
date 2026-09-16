@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\SupportNotification;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class SupportNotificationSeeder extends Seeder
 {
@@ -12,21 +12,15 @@ class SupportNotificationSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('support_notifications')->insert([
+        $defaultEmail = config('mail.customer_support_mail');
+
+        SupportNotification::firstOrCreate(
+            ['email' => $defaultEmail],
             [
-                'name' => 'Customer Support Officer',
-                'email' => 'godswill.nzeadibe@imperialmortgagebank.com',
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-//            [
-//                'name' => 'Support Team',
-//                'email' => 'customersupport',
-//                'active' => true,
-//                'created_at' => now(),
-//                'updated_at' => now(),
-//            ],
-        ]);
+                'firstname' => 'Customer',
+                'lastname' => 'Support Officer',
+                'status' => 'Active',
+            ]
+        );
     }
 }

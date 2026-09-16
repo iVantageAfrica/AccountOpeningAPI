@@ -37,6 +37,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $adminManagementPermissions = [
             'manage-admins',
             'assign-roles',
+            'manage-support-notifications',
         ];
 
         $allPermissions = array_merge(

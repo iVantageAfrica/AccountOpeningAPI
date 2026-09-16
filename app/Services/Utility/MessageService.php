@@ -8,6 +8,7 @@ use App\Enum\SupportNotificationEnum;
 use App\Helpers\EncryptionHelper;
 use App\Models\User;
 use App\Models\Utility\Otp;
+use App\Services\Account\SupportNotificationService;
 use App\Services\ThirdParty\ImperialMortgage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -80,8 +81,8 @@ class MessageService
     public static function supportNotificationMessage(array $data): void
     {
         $view = SupportNotificationEnum::from($data['notificationType'])->view();
-        $subject = SupportNotificationEnum::from($data['notificationType'])->subject(). ' .ACC NO-'.$data['accountData']['account_number'];
-        self::mailMessageWithAttachment(config('mail.customer_support_mail'), $subject, $view, $data, $data['attachments'] ?? []);
+        $subject = SupportNotificationEnum::from($data['notificationType'])->subject().' .ACC NO-'.$data['accountData']['account_number'];
+        self::mailMessageWithAttachment(SupportNotificationService::getActiveEmails(), $subject, $view, $data, $data['attachments'] ?? []);
     }
 
     public static function portalReferenceNotification(array $data): void
@@ -90,11 +91,12 @@ class MessageService
         $adminSubject = SupportNotificationEnum::from($data['notificationType'])->subject();
         $accountHolderView = 'emails.refereeNotification';
         $accountHolderSubject = 'New Imperial Account Reference Submitted– Account Opening Requirement';
-        if (!empty($data['refereeData']['account_holder_email']) && $data['refereeData']['account_holder_email'] !== 'undefined') {
+        if (! empty($data['refereeData']['account_holder_email']) && $data['refereeData']['account_holder_email'] !== 'undefined') {
             self::mailMessage($data['refereeData']['account_holder_email'], $accountHolderSubject, $accountHolderView, $data);
         }
-        self::mailMessageWithAttachment(config('mail.customer_support_mail'), $adminSubject, $adminView, $data, $data['attachments'] ?? []);
+        self::mailMessageWithAttachment(SupportNotificationService::getActiveEmails(), $adminSubject, $adminView, $data, $data['attachments'] ?? []);
     }
+
     public static function mailMessage(string $emailAddress, string $subject, string $viewName, array $data = []): void
     {
         Mail::send(
@@ -108,14 +110,19 @@ class MessageService
         );
     }
 
-    public static function mailMessageWithAttachment(string $emailAddress, string $subject, string $viewName, array $data = [], array $attachments = []): void
+    public static function mailMessageWithAttachment(string|array $emailAddresses, string $subject, string $viewName, array $data = [], array $attachments = []): void
     {
+        $emails = is_array($emailAddresses) ? $emailAddresses : [$emailAddresses];
+        if (empty($emails)) {
+            return;
+        }
+
         Mail::send(
             $viewName,
             $data,
-            static function ($message) use ($emailAddress, $subject, $attachments) {
+            static function ($message) use ($emails, $subject, $attachments) {
                 $message->from(config('mail.from.address'), config('mail.from.name'))
-                    ->to($emailAddress)
+                    ->to($emails)
                     ->subject($subject);
                 foreach ($attachments as $attachment) {
                     $message->attachData(
